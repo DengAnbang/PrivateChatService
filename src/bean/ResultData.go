@@ -10,7 +10,7 @@ import (
 type ResultData struct {
 	Code         int         `json:"code"`
 	Type         int         `json:"type"`
-	Message      string      `json:"message"`
+	Msg          string      `json:"msg"`
 	DebugMessage string      `json:"debug_message"`
 	Data         interface{} `json:"data"`
 }
@@ -22,13 +22,13 @@ type RequestData struct {
 }
 
 func (r *ResultData) Error() string {
-	return r.Message
+	return r.Msg
 }
 func NewSucceedMessage(data interface{}) *ResultData {
-	return &ResultData{Code: code.OK, Message: "", Data: data}
+	return &ResultData{Code: code.OK, Msg: "", Data: data}
 }
 func NewErrorMessage(message string) *ResultData {
-	return &ResultData{Code: code.NormalErr, Message: message}
+	return &ResultData{Code: code.NormalErr, Msg: message}
 }
 func (r *ResultData) SetDeBugMessage(message string) *ResultData {
 	r.DebugMessage = message

@@ -25,8 +25,11 @@ var (
 	PublicUpdatesUpload   = "/public/app/updates/upload"
 	PublicUpdatesCheck    = "/public/app/updates/check"
 	//用户相关
-	UserRegister = "/app/user/register"
-	UserLogin    = "/app/user/login"
+	UserRegister       = "/app/user/register"
+	UserLogin          = "/app/user/login"
+	UserUpdate         = "/app/user/update"
+	UserSecurityUpdate = "/app/user/security/update"
+	UserSelectSecurity = "/app/user/select/security"
 )
 
 func Run(port string, mux *http.ServeMux) {
@@ -43,6 +46,9 @@ func Run(port string, mux *http.ServeMux) {
 	//用户相关
 	Apis[UserRegister] = UserRegisterHttp
 	Apis[UserLogin] = UserLoginHttp
+	Apis[UserUpdate] = UserUpdateHttp
+	Apis[UserSecurityUpdate] = UserSecurityUpdateHttp
+	Apis[UserSelectSecurity] = UserSelectSecurityByAccountHttp
 
 	httpUtils.FileHandle(mux, code.RootName, code.RootPath)
 	for k, v := range Apis {

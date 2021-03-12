@@ -22,7 +22,7 @@ func UserRegister(userBean bean.UserBean) (bean.UserBean, error) {
 		return user, bean.NewErrorMessage("账号已经存在了!")
 	}
 	userBean.UserId = utils.NewUUID()
-	stmtIn, err := dbConn.Prepare("INSERT INTO table_user (user_id,account,pwd,name,head_portrait,vip_time)VALUES(?,?,?,?,?,?)")
+	stmtIn, err := dbConn.Prepare("INSERT INTO table_user (user_id,account,pwd,user_name,head_portrait,vip_time)VALUES(?,?,?,?,?,?)")
 	if err != nil {
 		return user, err
 	}
@@ -71,4 +71,69 @@ func UserSelectByAccount(account string) (bean.UserBean, error) {
 		user = *bean.NewUserBean(mapStrings)
 	}
 	return user, err
+}
+func UserUpdate(userBean bean.UserBean) (bean.UserBean, error) {
+	var user bean.UserBean
+	if len(userBean.Account) == 0 {
+		return user, bean.NewErrorMessage("账号不能为空")
+		//return user, httpUtils.NewResultError(code.NormalErr, "账号不能为空")
+	}
+	user, err := UserSelectByAccount(userBean.Account)
+	if err != nil {
+		return user, err
+	}
+	if len(user.UserId) < 0 {
+		return user, bean.NewErrorMessage("用户不存在!")
+	}
+	user.Modify(userBean)
+	stmtIn, err := dbConn.Prepare("UPDATE table_user SET pwd=?,user_name=?,head_portrait=?,vip_time=? WHERE account=?")
+	if err != nil {
+		return user, err
+	}
+	_, err = stmtIn.Exec(user.Pwd, user.UserName, user.HeadPortrait, user.VipTime, user.Account)
+	_ = stmtIn.Close()
+	return UserSelectByAccount(user.Account)
+}
+
+func UserSelectSecurityByAccount(account string) (bean.SecurityBean, error) {
+	var user bean.SecurityBean
+	stmtOut, err := dbConn.Prepare("SELECT question1,answer1,question2,answer2 FROM table_user WHERE account = ?")
+	if err != nil {
+		return user, err
+	}
+	defer stmtOut.Close()
+	rows, err := stmtOut.Query(account)
+	if err != nil {
+		return user, err
+	}
+	defer rows.Close()
+	if rows.Next() {
+		mapStrings, err := dbutils.GetRowsMap(rows)
+		if err != nil {
+			return user, err
+		}
+		user = *bean.NewSecurityBean(mapStrings)
+	}
+	return user, err
+}
+
+func UserSecurityUpdate(account, q1, a1, q2, a2 string) error {
+	if len(q1) == 0 || len(a1) == 0 || len(q2) == 0 || len(a2) == 0 {
+		return bean.NewErrorMessage("账号不能为空")
+		//return user, httpUtils.NewResultError(code.NormalErr, "账号不能为空")
+	}
+	user, err := UserSelectByAccount(account)
+	if err != nil {
+		return err
+	}
+	if len(user.UserId) < 0 {
+		return bean.NewErrorMessage("用户不存在!")
+	}
+	stmtIn, err := dbConn.Prepare("UPDATE table_user SET question1=?,answer1=?,question2=?,answer2=? WHERE account=?")
+	if err != nil {
+		return err
+	}
+	_, err = stmtIn.Exec(q1, a1, q2, a2, account)
+	_ = stmtIn.Close()
+	return err
 }

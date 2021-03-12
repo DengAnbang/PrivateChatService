@@ -12,13 +12,16 @@ func CreateUserTable(db *sql.DB) error {
 	    user_id VARCHAR(64) NOT NULL  COMMENT '用户id',
 	    account VARCHAR(64) NULL DEFAULT NULL COMMENT '用户账号',
 	    pwd VARCHAR(64) NULL DEFAULT NULL COMMENT '用户密码',
-		name VARCHAR(64) NULL DEFAULT '未设置名称',
+		user_name VARCHAR(64) NULL DEFAULT '未设置名称',
 		head_portrait VARCHAR(64) NULL DEFAULT '' COMMENT '头像',
 		vip_time TIMESTAMP  NOT NULL DEFAULT current_timestamp COMMENT 'vip到期时间',
 	    created TIMESTAMP NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
 	    PRIMARY KEY (id)
 	)AUTO_INCREMENT = 0`)
-
+	_ = AddColumn(db, "table_user", " question1", "", "问题1")
+	_ = AddColumn(db, "table_user", " answer1", "", "答案1")
+	_ = AddColumn(db, "table_user", " question2", "", "问题2")
+	_ = AddColumn(db, "table_user", " answer2", "", "答案2")
 	return err
 }
 

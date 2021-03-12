@@ -31,10 +31,10 @@ import (
 func UserRegisterHttp(_ http.ResponseWriter, r *http.Request) error {
 	account := httpUtils.GetValueFormRequest(r, "account")
 	pwd := httpUtils.GetValueFormRequest(r, "pwd")
-	name := httpUtils.GetValueFormRequest(r, "name")
+	user_name := httpUtils.GetValueFormRequest(r, "user_name")
 	headPortrait := httpUtils.GetValueFormRequest(r, "headPortrait")
 	userBean := bean.UserBean{
-		UserName:     name,
+		UserName:     user_name,
 		Account:      account,
 		Pwd:          pwd,
 		VipTime:      timeUtils.GetCurrentTimeFormat(timeUtils.DATE_TIME_FMT),
@@ -69,4 +69,44 @@ func UserLoginHttp(_ http.ResponseWriter, r *http.Request) error {
 	}
 	return bean.NewSucceedMessage(user)
 
+}
+func UserUpdateHttp(_ http.ResponseWriter, r *http.Request) error {
+	account := httpUtils.GetValueFormRequest(r, "account")
+	pwd := httpUtils.GetValueFormRequest(r, "pwd")
+	user_name := httpUtils.GetValueFormRequest(r, "user_name")
+	headPortrait := httpUtils.GetValueFormRequest(r, "headPortrait")
+	vip_time := httpUtils.GetValueFormRequest(r, "vip_time")
+	userBean := bean.UserBean{
+		UserName:     user_name,
+		UserId:       "",
+		Account:      account,
+		HeadPortrait: headPortrait,
+		VipTime:      vip_time,
+		Pwd:          pwd,
+	}
+	user, err := dbops.UserUpdate(userBean)
+	if err != nil {
+		return err
+	}
+	return bean.NewSucceedMessage(user)
+}
+func UserSecurityUpdateHttp(_ http.ResponseWriter, r *http.Request) error {
+	account := httpUtils.GetValueFormRequest(r, "account")
+	q1 := httpUtils.GetValueFormRequest(r, "q1")
+	a1 := httpUtils.GetValueFormRequest(r, "a1")
+	q2 := httpUtils.GetValueFormRequest(r, "q2")
+	a2 := httpUtils.GetValueFormRequest(r, "a2")
+	err := dbops.UserSecurityUpdate(account, q1, a1, q2, a2)
+	if err != nil {
+		return err
+	}
+	return bean.NewSucceedMessage("修改成功")
+}
+func UserSelectSecurityByAccountHttp(_ http.ResponseWriter, r *http.Request) error {
+	account := httpUtils.GetValueFormRequest(r, "account")
+	securityBean, err := dbops.UserSelectSecurityByAccount(account)
+	if err != nil {
+		return err
+	}
+	return bean.NewSucceedMessage(securityBean)
 }
