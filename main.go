@@ -3,6 +3,7 @@ package main
 import (
 	"gitee.com/DengAnbang/PrivateChatService/src/api"
 	"gitee.com/DengAnbang/PrivateChatService/src/config"
+	"gitee.com/DengAnbang/PrivateChatService/src/socket"
 	"gitee.com/DengAnbang/goutils/loge"
 	"gitee.com/DengAnbang/goutils/sysUtils"
 	"net/http"
@@ -15,9 +16,8 @@ func main() {
 	err := sysUtils.Install("服务", "服务", "此服务程序为后端服务功能",
 		func() {
 			loge.W("准备开启服务..", config.ConfigBean.ApiPort)
-			//go socket.TcpRun(config.ConfigBean.SocketPort)
 			mux := http.NewServeMux()
-
+			go socket.TcpRun(config.ConfigBean.SocketPort)
 			//mux.HandleFunc("/pc/websocket", socket.WebSocketRun)
 			api.Run(config.ConfigBean.ApiPort, mux)
 		})

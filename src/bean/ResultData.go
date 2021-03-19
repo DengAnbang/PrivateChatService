@@ -8,17 +8,19 @@ import (
 )
 
 type ResultData struct {
-	Code         int         `json:"code"`
-	Type         int         `json:"type"`
+	Code         string      `json:"code"`
+	Type         string      `json:"type"`
 	Msg          string      `json:"msg"`
 	DebugMessage string      `json:"debug_message"`
 	Data         interface{} `json:"data"`
 }
-type RequestData struct {
-	Code     int                    `json:"code"`
-	Msg      string                 `json:"msg"`
-	DebugMsg string                 `json:"debug_msg"`
-	Data     map[string]interface{} `json:"data"`
+type SocketData struct {
+	TargetId string `json:"targetId"`
+	SenderId string `json:"senderId"`
+	Type     string `json:"type"`
+	Msg      string `json:"msg"`
+	DebugMsg string `json:"debug_msg"`
+	Data     string `json:"data"`
 }
 
 func (r *ResultData) Error() string {

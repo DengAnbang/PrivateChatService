@@ -25,6 +25,20 @@ func CreateUserTable(db *sql.DB) error {
 	return err
 }
 
+//创建用户表
+func CreateUserFriendTable(db *sql.DB) error {
+	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS table_user_friend (
+	    id INT(64) NOT NULL AUTO_INCREMENT COMMENT '数据id',
+	    user_id VARCHAR(64) NOT NULL  COMMENT '用户id',
+	    to_user_id VARCHAR(64) NOT NULL  COMMENT '好友id',
+	    friend_type VARCHAR(64) NOT NULL  COMMENT '好友类型(0:未验证,1:好友)',
+	    chat_pwd VARCHAR(64) NULL DEFAULT ''  COMMENT '聊天密码',
+	    created TIMESTAMP NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
+	    PRIMARY KEY (id)
+	)AUTO_INCREMENT = 0`)
+	return err
+}
+
 func AddColumn(db *sql.DB, tableName, columnName string, defaultValue string, comment string) error {
 	result, err := db.Prepare(`SELECT count(*) FROM information_schema.columns WHERE table_name = ? AND column_name = ?`)
 	if err != nil {

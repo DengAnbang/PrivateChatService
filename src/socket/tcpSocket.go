@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"gitee.com/DengAnbang/PrivateChatService/src/bean"
+	"gitee.com/DengAnbang/PrivateChatService/src/socket/push"
+	"gitee.com/DengAnbang/PrivateChatService/src/socket/socketConst"
 	"net"
 
 	"gitee.com/DengAnbang/goutils/loge"
@@ -37,7 +39,7 @@ func (conn *TcpConn) SendMessageToConn(msg interface{}) (err error) {
 	_, err = conn.WriteMessage(jsonBytes)
 	return err
 }
-func (conn *TcpConn) Response(err error, messageType int) {
+func (conn *TcpConn) Response(err error, messageType string) {
 	if resultData, ok := err.(*bean.ResultData); ok {
 		resultData.Type = messageType
 		sendErr := conn.SendMessageToConn(resultData)
@@ -95,6 +97,54 @@ func (conn *TcpConn) ReadConn(readerChannel chan<- []byte) error {
 				last := buffer.Bytes()[conn.headerLength+dataLen:]
 				buffer = bytes.NewBuffer(make([]byte, 0, bytesSize))
 				buffer.Write(last)
+			}
+		}
+	}
+
+}
+func TcpRun(port string) {
+	netListen, err := net.Listen("tcp", ":"+port)
+	if err != nil {
+		loge.W(err)
+		panic(err)
+	}
+	defer netListen.Close()
+	for {
+		conn, err := netListen.Accept()
+		if err != nil {
+			loge.W(err)
+			continue
+		}
+		loge.WD("连接成功请求地址:" + conn.RemoteAddr().String())
+		go tcpSocketHandler(conn)
+	}
+}
+func tcpSocketHandler(conn net.Conn) {
+	tcpConn := TcpConn{headerLength: HeaderLength, Conn: conn}
+	message := bean.NewSucceedMessage("连接成功!")
+	message.Type = socketConst.TypeConnect
+	err := tcpConn.SendMessageToConn(message)
+	if err != nil {
+		loge.W(err)
+	}
+	data := make(chan []byte)
+	go tcpConn.ReadConn(data)
+	for {
+		select {
+		case v, ok := <-data:
+			if ok {
+				var sm bean.SocketData
+				err := json.Unmarshal(v, &sm)
+				loge.WD("读取到的消息:" + string(v))
+				if err == nil {
+					go Dispense(&sm, &tcpConn)
+				} else {
+					tcpConn.Response(bean.NewErrorMessage(fmt.Sprintf("编码错误,%s", err)), "0")
+				}
+			} else {
+				push.UnRegister(&tcpConn)
+				loge.WD("关闭:" + tcpConn.Id)
+				return
 			}
 		}
 	}

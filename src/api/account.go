@@ -110,3 +110,54 @@ func UserSelectSecurityByAccountHttp(_ http.ResponseWriter, r *http.Request) err
 	}
 	return bean.NewSucceedMessage(securityBean)
 }
+func UserSelectByAccountHttp(_ http.ResponseWriter, r *http.Request) error {
+	account := httpUtils.GetValueFormRequest(r, "account")
+	userBean, err := dbops.UserSelectByAccount(account)
+	if err != nil {
+		return err
+	}
+	return bean.NewSucceedMessage(userBean)
+}
+func UserSelectByIdHttp(_ http.ResponseWriter, r *http.Request) error {
+	account := httpUtils.GetValueFormRequest(r, "user_id")
+	userBean, err := dbops.UserSelectById(account)
+	if err != nil {
+		return err
+	}
+	return bean.NewSucceedMessage(userBean)
+}
+
+func UserAddFriendHttp(_ http.ResponseWriter, r *http.Request) error {
+	user_id := httpUtils.GetValueFormRequest(r, "user_id")
+	to_user_id := httpUtils.GetValueFormRequest(r, "to_user_id")
+	friend_type := httpUtils.GetValueFormRequest(r, "friend_type")
+	err := dbops.UserAddFriend(user_id, to_user_id, friend_type)
+	if err != nil {
+		return err
+	}
+	return bean.NewSucceedMessage("申请成功!")
+}
+func UserRemoveFriendHttp(_ http.ResponseWriter, r *http.Request) error {
+	user_id := httpUtils.GetValueFormRequest(r, "user_id")
+	to_user_id := httpUtils.GetValueFormRequest(r, "to_user_id")
+	err := dbops.UserRemoveFriend(user_id, to_user_id)
+	if err != nil {
+		return err
+	}
+	err = dbops.UserRemoveFriend(to_user_id, user_id)
+	if err != nil {
+		return err
+	}
+	return bean.NewSucceedMessage("删除成功!")
+}
+
+func UserSelectFriendHttp(_ http.ResponseWriter, r *http.Request) error {
+	user_id := httpUtils.GetValueFormRequest(r, "user_id")
+	friend_type := httpUtils.GetValueFormRequest(r, "friend_type")
+	beans, err := dbops.UserSelectFriend(user_id, friend_type)
+	if err != nil {
+		return err
+	}
+
+	return bean.NewSucceedMessage(beans)
+}

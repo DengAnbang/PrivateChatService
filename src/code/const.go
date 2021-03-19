@@ -1,8 +1,8 @@
 package code
 
 const (
-	OK        = 0  //成功
-	NormalErr = -1 //普通错误
+	OK        = "0"  //成功
+	NormalErr = "-1" //普通错误
 )
 const (
 	AdministratorAccount = "admin"

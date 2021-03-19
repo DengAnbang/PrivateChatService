@@ -25,11 +25,16 @@ var (
 	PublicUpdatesUpload   = "/public/app/updates/upload"
 	PublicUpdatesCheck    = "/public/app/updates/check"
 	//用户相关
-	UserRegister       = "/app/user/register"
-	UserLogin          = "/app/user/login"
-	UserUpdate         = "/app/user/update"
-	UserSecurityUpdate = "/app/user/security/update"
-	UserSelectSecurity = "/app/user/select/security"
+	UserRegister        = "/app/user/register"
+	UserLogin           = "/app/user/login"
+	UserUpdate          = "/app/user/update"
+	UserSecurityUpdate  = "/app/user/security/update"
+	UserSelectSecurity  = "/app/user/select/security"
+	UserSelectByAccount = "/app/user/select/by/account"
+	UserSelectById      = "/app/user/select/by/id"
+	UserAddFriend       = "/app/user/add/friend"
+	UserRemoveFriend    = "/app/user/remove/friend"
+	UserSelectFriend    = "/app/user/select/friend"
 )
 
 func Run(port string, mux *http.ServeMux) {
@@ -49,6 +54,11 @@ func Run(port string, mux *http.ServeMux) {
 	Apis[UserUpdate] = UserUpdateHttp
 	Apis[UserSecurityUpdate] = UserSecurityUpdateHttp
 	Apis[UserSelectSecurity] = UserSelectSecurityByAccountHttp
+	Apis[UserSelectByAccount] = UserSelectByAccountHttp
+	Apis[UserSelectById] = UserSelectByIdHttp
+	Apis[UserAddFriend] = UserAddFriendHttp
+	Apis[UserRemoveFriend] = UserRemoveFriendHttp
+	Apis[UserSelectFriend] = UserSelectFriendHttp
 
 	httpUtils.FileHandle(mux, code.RootName, code.RootPath)
 	for k, v := range Apis {
