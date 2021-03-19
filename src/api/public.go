@@ -5,6 +5,7 @@ import (
 	"gitee.com/DengAnbang/PrivateChatService/src/bean"
 	"gitee.com/DengAnbang/PrivateChatService/src/code"
 	"gitee.com/DengAnbang/goutils/httpUtils"
+	"gitee.com/DengAnbang/goutils/timeUtils"
 	"gitee.com/DengAnbang/goutils/utils"
 	"io/ioutil"
 	"net/http"
@@ -36,7 +37,9 @@ func PublicFileUploadHttp(w http.ResponseWriter, r *http.Request) error {
 		if err != nil {
 			return err
 		}
-		fileType := httpUtils.GetValueFormRequest(r, "fileType")
+		//fileType := httpUtils.GetValueFormRequest(r, "fileType")
+		fileType := r.FormValue("fileType")
+		data := timeUtils.GetCurrentTimeFormat(timeUtils.DATE_FMT)
 		fileId := httpUtils.GetValueFormRequest(r, "fileId")
 		file, h, err := r.FormFile("file")
 		if err != nil {
@@ -46,29 +49,23 @@ func PublicFileUploadHttp(w http.ResponseWriter, r *http.Request) error {
 		if err != nil {
 			return err
 		}
-		FileRoot := ""
 		if len(fileId) == 0 {
 			fileId = utils.NewUUID()
-			FileRoot = code.FileRootPath + "/" + fileType + "/" + fileId + "/"
-		} else {
-			FileRoot = code.FileRootPath + "/" + fileType + "/" + fileId + "/"
-			clean := filepath.Clean(FileRoot)
-			err = os.RemoveAll(clean)
 		}
-
+		FileRoot := filepath.Join(code.FileRootPath, fileType, data, fileId)
+		//FileRoot := code.FileRootPath + "/" + fileType + "/" + data + "/" + fileId + "/"
 		_ = os.MkdirAll(FileRoot, 0x777)
-		FilePath := FileRoot + h.Filename
+		FilePath := filepath.Join(FileRoot, h.Filename)
 		err = ioutil.WriteFile(FilePath, bytes, 0x777)
 		if err != nil {
 			return err
 		}
-		replace := strings.Replace(FilePath, code.CurrentPath, "", 1)
-		replace = strings.Replace(replace, "\\", "/", -1)
-		fileBean := bean.FileBean{
-			FileId:   fileId,
-			FilePath: filepath.Clean(FileRoot),
-		}
-		return bean.NewSucceedMessage(fileBean)
+		showPath := strings.Replace(FilePath, code.CurrentPath, "", 1)
+		//fileBean := bean.FileBean{
+		//	FileId:   fileId,
+		//	FilePath: filepath.Clean(showPath),
+		//}
+		return bean.NewSucceedMessage(filepath.Clean(showPath))
 	}
 	if r.Method == "GET" {
 		var html = fmt.Sprintf(`<!doctype html>

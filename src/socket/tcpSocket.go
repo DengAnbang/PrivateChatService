@@ -106,7 +106,7 @@ func TcpRun(port string) {
 	netListen, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		loge.W(err)
-		panic(err)
+		return
 	}
 	defer netListen.Close()
 	for {
