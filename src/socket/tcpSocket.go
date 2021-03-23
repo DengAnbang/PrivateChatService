@@ -8,9 +8,8 @@ import (
 	"gitee.com/DengAnbang/PrivateChatService/src/bean"
 	"gitee.com/DengAnbang/PrivateChatService/src/socket/push"
 	"gitee.com/DengAnbang/PrivateChatService/src/socket/socketConst"
-	"net"
-
 	"gitee.com/DengAnbang/goutils/loge"
+	"net"
 )
 
 const (
@@ -28,6 +27,8 @@ func (conn *TcpConn) SetId(id string) {
 	conn.Id = id
 }
 func (conn *TcpConn) GetId() string {
+	_, err := net.Dial("tcp", ":9091")
+	loge.W(err)
 	return conn.Id
 }
 func (conn *TcpConn) SendMessageToConn(msg interface{}) (err error) {
@@ -103,19 +104,23 @@ func (conn *TcpConn) ReadConn(readerChannel chan<- []byte) error {
 
 }
 func TcpRun(port string) {
+
 	netListen, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		loge.W(err)
+
 		return
 	}
 	defer netListen.Close()
+
 	for {
 		conn, err := netListen.Accept()
+		loge.WD("连接成功请求地址:")
 		if err != nil {
 			loge.W(err)
 			continue
 		}
-		loge.WD("连接成功请求地址:" + conn.RemoteAddr().String())
+
 		go tcpSocketHandler(conn)
 	}
 }

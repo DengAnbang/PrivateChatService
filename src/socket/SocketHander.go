@@ -31,15 +31,19 @@ func Dispense(message *bean.SocketData, conn push.ResponseAble) {
 		succeedMessage.Type = socketConst.TypeLogin
 		_ = conn.SendMessageToConn(succeedMessage)
 
-	case socketConst.TYPE_MSG: //消息
+	case socketConst.TYPE_MSG_SEND: //消息
 		targetId := message.TargetId
 		message := message.Data
-		push.Push(targetId, socketConst.TYPE_MSG, message)
-
-	case socketConst.TYPE_MSG_STATUS_SEND:
+		push.Push(targetId, socketConst.TYPE_MSG_RECEIVE, message)
+	case socketConst.TYPE_MSG_UPDATE:
 		targetId := message.TargetId
-		senderId := message.SenderId
-		push.Push(senderId, socketConst.TYPE_MSG_STATUS_SEND, targetId)
+		message := message.Data
+		push.Push(targetId, socketConst.TYPE_MSG_UPDATE, message)
+
+	case socketConst.TypeHeartbeat:
+		succeedMessage := bean.NewSucceedMessage("PONG")
+		succeedMessage.Type = socketConst.TypeHeartbeat
+		conn.SendMessageToConn(succeedMessage)
 
 	default:
 		conn.Response(bean.NewErrorMessage(fmt.Sprintf("未知的消息类型%v", message.Type)), "0")
