@@ -35,6 +35,13 @@ var (
 	UserAddFriend       = "/app/user/add/friend"
 	UserRemoveFriend    = "/app/user/remove/friend"
 	UserSelectFriend    = "/app/user/select/friend"
+
+	GroupRegister      = "/app/group/register"
+	GroupAddUser       = "/app/group/add/user"
+	GroupRemoveUser    = "/app/group/remove/user"
+	GroupSelectList    = "/app/group/select/list"
+	GroupSelectUser    = "/app/group/select/user"
+	GroupSelectUserMsg = "/app/group/select/user/msg"
 )
 
 func Run(port string, mux *http.ServeMux) {
@@ -59,6 +66,13 @@ func Run(port string, mux *http.ServeMux) {
 	Apis[UserAddFriend] = UserAddFriendHttp
 	Apis[UserRemoveFriend] = UserRemoveFriendHttp
 	Apis[UserSelectFriend] = UserSelectFriendHttp
+	//群相关
+	Apis[GroupRegister] = GroupRegisterHttp
+	Apis[GroupAddUser] = GroupAddUserHttp
+	Apis[GroupRemoveUser] = GroupRemoveUserHttp
+	Apis[GroupSelectList] = GroupSelectListHttp
+	Apis[GroupSelectUser] = GroupSelectUserHttp
+	Apis[GroupSelectUserMsg] = GroupSelectUserMsgHttp
 
 	httpUtils.FileHandle(mux, code.RootName, code.RootPath)
 	for k, v := range Apis {

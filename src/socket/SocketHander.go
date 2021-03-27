@@ -3,6 +3,7 @@ package socket
 import (
 	"fmt"
 	"gitee.com/DengAnbang/PrivateChatService/src/bean"
+	"gitee.com/DengAnbang/PrivateChatService/src/dbops"
 	"gitee.com/DengAnbang/PrivateChatService/src/socket/push"
 	"gitee.com/DengAnbang/PrivateChatService/src/socket/socketConst"
 )
@@ -32,19 +33,24 @@ func Dispense(message *bean.SocketData, conn push.ResponseAble) {
 		_ = conn.SendMessageToConn(succeedMessage)
 
 	case socketConst.TYPE_MSG_SEND: //消息
-		targetId := message.TargetId
-		message := message.Data
-		push.Push(targetId, socketConst.TYPE_MSG_RECEIVE, message)
+		message.Type = socketConst.TYPE_MSG_RECEIVE
+		push.PushSocket(message)
+	case socketConst.TYPE_MSG_GROUP_SEND: //群消息
+		message.Type = socketConst.TYPE_MSG_RECEIVE
+		groups, _ := dbops.GroupSelectUser(message.TargetId)
+		for _, value := range groups {
+			if value.UserId != message.SenderId {
+				push.PushSocketByTargetId(message, value.UserId)
+			}
+		}
+		//push.PushSocket(message)
 	case socketConst.TYPE_MSG_UPDATE:
-		targetId := message.TargetId
-		message := message.Data
-		push.Push(targetId, socketConst.TYPE_MSG_UPDATE, message)
+		push.PushSocket(message)
 
 	case socketConst.TypeHeartbeat:
-		succeedMessage := bean.NewSucceedMessage("PONG")
-		succeedMessage.Type = socketConst.TypeHeartbeat
-		conn.SendMessageToConn(succeedMessage)
-
+		message.Data = "PONG"
+		//push.PushSocket(message)
+		conn.SendMessageToConn(message)
 	default:
 		conn.Response(bean.NewErrorMessage(fmt.Sprintf("未知的消息类型%v", message.Type)), "0")
 	}

@@ -60,3 +60,9 @@ func Push(userId string, pushType string, msg string) {
 	succeedMessage.Type = pushType
 	SocketManage.SendMessageToKey(userId, succeedMessage)
 }
+func PushSocket(socketData *bean.SocketData) {
+	SocketManage.SendMessageToKey(socketData.TargetId, socketData)
+}
+func PushSocketByTargetId(socketData *bean.SocketData, targetId string) {
+	SocketManage.SendMessageToKey(targetId, socketData)
+}

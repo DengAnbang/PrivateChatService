@@ -90,6 +90,8 @@ func UserUpdateHttp(_ http.ResponseWriter, r *http.Request) error {
 	}
 	return bean.NewSucceedMessage(user)
 }
+
+//安全问题接口
 func UserSecurityUpdateHttp(_ http.ResponseWriter, r *http.Request) error {
 	account := httpUtils.GetValueFormRequest(r, "account")
 	q1 := httpUtils.GetValueFormRequest(r, "q1")
