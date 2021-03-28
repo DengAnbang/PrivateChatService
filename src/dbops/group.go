@@ -82,6 +82,22 @@ func GroupRemoveUser(group_id, user_id string) error {
 	}
 	return err
 }
+func GroupRemoveUserAll(group_id string) error {
+	if len(group_id) == 0 {
+		return bean.NewErrorMessage("信息不能为空")
+	}
+
+	stmtIn, err := dbConn.Prepare("DELETE FROM table_friend_group WHERE group_id=? ")
+	if err != nil {
+		return err
+	}
+	_, err = stmtIn.Exec(group_id)
+	_ = stmtIn.Close()
+	if err != nil {
+		return err
+	}
+	return err
+}
 
 func GroupSelectList(user_id string) ([]bean.ChatGroup, error) {
 	var chatGroup = make([]bean.ChatGroup, 0)

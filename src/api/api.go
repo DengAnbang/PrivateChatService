@@ -39,6 +39,7 @@ var (
 	GroupRegister      = "/app/group/register"
 	GroupAddUser       = "/app/group/add/user"
 	GroupRemoveUser    = "/app/group/remove/user"
+	GroupRemoveUserAll = "/app/group/remove/user/all"
 	GroupSelectList    = "/app/group/select/list"
 	GroupSelectUser    = "/app/group/select/user"
 	GroupSelectUserMsg = "/app/group/select/user/msg"
@@ -70,6 +71,7 @@ func Run(port string, mux *http.ServeMux) {
 	Apis[GroupRegister] = GroupRegisterHttp
 	Apis[GroupAddUser] = GroupAddUserHttp
 	Apis[GroupRemoveUser] = GroupRemoveUserHttp
+	Apis[GroupRemoveUserAll] = GroupRemoveUserAllHttp
 	Apis[GroupSelectList] = GroupSelectListHttp
 	Apis[GroupSelectUser] = GroupSelectUserHttp
 	Apis[GroupSelectUserMsg] = GroupSelectUserMsgHttp

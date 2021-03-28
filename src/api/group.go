@@ -39,6 +39,16 @@ func GroupRemoveUserHttp(_ http.ResponseWriter, r *http.Request) error {
 	return bean.NewSucceedMessage("删除成功")
 }
 
+//移除所以人(解散群)
+func GroupRemoveUserAllHttp(_ http.ResponseWriter, r *http.Request) error {
+	group_id := httpUtils.GetValueFormRequest(r, "group_id")
+	err := dbops.GroupRemoveUserAll(group_id)
+	if err != nil {
+		return err
+	}
+	return bean.NewSucceedMessage("删除成功")
+}
+
 //查询用户的组列表
 func GroupSelectListHttp(_ http.ResponseWriter, r *http.Request) error {
 	user_id := httpUtils.GetValueFormRequest(r, "user_id")
