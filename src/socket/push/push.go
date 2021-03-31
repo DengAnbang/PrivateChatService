@@ -36,6 +36,7 @@ type ResponseAble interface {
 	SetId(id string)
 	Response(err error, messageType string)
 	SendMessageToConn(msg interface{}) (err error)
+	Close() (err error)
 }
 
 func Register(key string, wc ResponseAble) (last ResponseAble) {
@@ -43,7 +44,7 @@ func Register(key string, wc ResponseAble) (last ResponseAble) {
 	defer SocketManage.Lock.Unlock()
 	if conn, ok := SocketManage.Conns[key]; ok {
 		last = conn
-		//delete(SocketManage.Conns, key)
+		delete(SocketManage.Conns, key)
 	}
 	SocketManage.Conns[key] = wc
 	wc.SetId(key)
@@ -53,6 +54,7 @@ func UnRegister(wc ResponseAble) (last ResponseAble) {
 	SocketManage.Lock.Lock()
 	defer SocketManage.Lock.Unlock()
 	delete(SocketManage.Conns, wc.GetId())
+	last = wc
 	return
 }
 func Push(userId string, pushType string, msg string) {

@@ -14,6 +14,9 @@ type WsConn struct {
 	Conn *websocket.Conn
 }
 
+func (conn *WsConn) Close() (err error) {
+	return conn.Conn.Close()
+}
 func (conn *WsConn) Response(err error, messageType string) {
 	if resultData, ok := err.(*bean.ResultData); ok {
 		resultData.Type = messageType
@@ -27,6 +30,7 @@ func (conn *WsConn) Response(err error, messageType string) {
 func (conn *WsConn) SetId(id string) {
 	conn.Id = id
 }
+
 func (conn *WsConn) GetId() string {
 	return conn.Id
 }

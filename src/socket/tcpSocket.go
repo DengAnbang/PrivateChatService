@@ -23,6 +23,9 @@ type TcpConn struct {
 	Conn         net.Conn
 }
 
+func (conn *TcpConn) Close() (err error) {
+	return conn.Conn.Close()
+}
 func (conn *TcpConn) SetId(id string) {
 	conn.Id = id
 }
@@ -140,7 +143,7 @@ func tcpSocketHandler(conn net.Conn) {
 			if ok {
 				var sm bean.SocketData
 				err := json.Unmarshal(v, &sm)
-				loge.WD("读取到的消息:" + string(v))
+				//loge.WD("读取到的消息:" + string(v))
 				if err == nil {
 					go Dispense(&sm, &tcpConn)
 				} else {

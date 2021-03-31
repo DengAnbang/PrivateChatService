@@ -32,6 +32,8 @@ func Dispense(message *bean.SocketData, conn push.ResponseAble) {
 		succeedMessage.Type = socketConst.TypeLogin
 		_ = conn.SendMessageToConn(succeedMessage)
 
+	case socketConst.TYPE_LOGIN_OUT: //退出登录
+		push.UnRegister(conn)
 	case socketConst.TYPE_MSG_SEND: //消息
 		message.Type = socketConst.TYPE_MSG_RECEIVE
 		push.PushSocket(message)

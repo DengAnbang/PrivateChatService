@@ -43,7 +43,7 @@ func CreateFriendListTable(db *sql.DB) error {
 	    id INT(64) NOT NULL AUTO_INCREMENT COMMENT '数据id',
 	    group_id VARCHAR(64) NOT NULL  COMMENT '组的id',
 	    group_name VARCHAR(64) NOT NULL  COMMENT '组的名称',
-	    group_portrait VARCHAR(64) NOT NULL  COMMENT '组的图片',
+	    group_portrait VARCHAR(128) NOT NULL  COMMENT '组的图片',
 	    user_id VARCHAR(64) NOT NULL  COMMENT '好友id',
 	    user_type VARCHAR(64) NOT NULL  COMMENT '用户类型(0:群员,1:群主)',
 	    chat_pwd VARCHAR(64) NULL DEFAULT ''  COMMENT '聊天密码',
