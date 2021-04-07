@@ -70,6 +70,15 @@ func UserLoginHttp(_ http.ResponseWriter, r *http.Request) error {
 	return bean.NewSucceedMessage(user)
 
 }
+func UserSelectByFuzzySearchHttp(_ http.ResponseWriter, r *http.Request) error {
+	word := httpUtils.GetValueFormRequest(r, "word")
+	user, err := dbops.UserSelectByFuzzySearch(word)
+	if err != nil {
+		return err
+	}
+	return bean.NewSucceedMessage(user)
+
+}
 func UserUpdateHttp(_ http.ResponseWriter, r *http.Request) error {
 	account := httpUtils.GetValueFormRequest(r, "account")
 	pwd := httpUtils.GetValueFormRequest(r, "pwd")

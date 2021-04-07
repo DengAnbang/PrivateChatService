@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gitee.com/DengAnbang/PrivateChatService/src/bean"
 	"gitee.com/DengAnbang/PrivateChatService/src/socket/push"
+	"gitee.com/DengAnbang/PrivateChatService/src/socket/socketConst"
 	"gitee.com/DengAnbang/goutils/loge"
 	"github.com/gorilla/websocket"
 	"log"
@@ -32,7 +33,9 @@ func WebSocketRun(w http.ResponseWriter, r *http.Request) {
 func webSocketHandler(ws *websocket.Conn) error {
 	defer ws.Close()
 	conn := WsConn{Conn: ws}
-	err := conn.SendMessageToConn(bean.NewSucceedMessage("连接成功!"))
+	message := bean.NewSucceedMessage("连接成功!")
+	message.Type = socketConst.TypeConnect
+	err := conn.SendMessageToConn(message)
 	if err != nil {
 		return err
 	}

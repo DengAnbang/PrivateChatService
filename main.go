@@ -19,8 +19,8 @@ func main() {
 			loge.W("准备开启服务..", config.ConfigBean.ApiPort)
 			mux := http.NewServeMux()
 			//signal.Notify(stop_chan, os.Interrupt)
-			go socket.TcpRun(config.ConfigBean.SocketPort)
-			//mux.HandleFunc("/websocket", socket.WebSocketRun)
+			//go socket.TcpRun(config.ConfigBean.SocketPort)
+			mux.HandleFunc("/websocket", socket.WebSocketRun)
 			api.Run(config.ConfigBean.ApiPort, mux)
 		})
 	if err != nil {

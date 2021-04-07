@@ -39,7 +39,7 @@ func (conn *TcpConn) SendMessageToConn(msg interface{}) (err error) {
 	if err != nil {
 		return err
 	}
-	loge.W("tcp:发送的内容:", string(jsonBytes))
+	//loge.W("tcp:发送的内容:", string(jsonBytes))
 	_, err = conn.WriteMessage(jsonBytes)
 	return err
 }

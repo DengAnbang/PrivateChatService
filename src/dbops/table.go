@@ -13,7 +13,7 @@ func CreateUserTable(db *sql.DB) error {
 	    account VARCHAR(64) NULL DEFAULT NULL COMMENT '用户账号',
 	    pwd VARCHAR(64) NULL DEFAULT NULL COMMENT '用户密码',
 		user_name VARCHAR(64) NULL DEFAULT '未设置名称',
-		head_portrait VARCHAR(64) NULL DEFAULT '' COMMENT '头像',
+		head_portrait VARCHAR(128) NULL DEFAULT '' COMMENT '头像',
 		vip_time TIMESTAMP  NOT NULL DEFAULT current_timestamp COMMENT 'vip到期时间',
 	    created TIMESTAMP NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
 	    PRIMARY KEY (id)
@@ -31,10 +31,10 @@ func CreateUserFriendTable(db *sql.DB) error {
 	    id INT(64) NOT NULL AUTO_INCREMENT COMMENT '数据id',
 	    user_id VARCHAR(64) NOT NULL  COMMENT '用户id',
 	    to_user_id VARCHAR(64) NOT NULL  COMMENT '好友id',
-	    friend_type VARCHAR(64) NOT NULL  COMMENT '好友类型(0:未验证,1:好友)',
+	    friend_type VARCHAR(64) NOT NULL  COMMENT '好友类型(0:默认,1:好友,2:未同意,3:拒绝)',
 	    chat_pwd VARCHAR(64) NULL DEFAULT ''  COMMENT '聊天密码',
 	    created TIMESTAMP NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
-	    PRIMARY KEY (id)
+	    PRIMARY KEY (id),UNIQUE KEY (user_id,to_user_id)
 	)AUTO_INCREMENT = 0`)
 	return err
 }

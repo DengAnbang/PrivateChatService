@@ -4,24 +4,25 @@ import (
 	"gitee.com/DengAnbang/PrivateChatService/src/bean"
 	"gitee.com/DengAnbang/goutils/dbutils"
 	"gitee.com/DengAnbang/goutils/utils"
+	"strings"
 )
 
-func GroupRegister(user_id string) (bean.ChatGroup, error) {
+func GroupRegister(user_id, group_name string) (bean.ChatGroup, error) {
 	var chatGroup bean.ChatGroup
 	if len(user_id) == 0 {
 		return chatGroup, bean.NewErrorMessage("用户id不能为空")
 	}
-	userBean, err := UserSelectById(user_id)
-	if err != nil {
-		return chatGroup, err
+	if len(group_name) == 0 {
+		return chatGroup, bean.NewErrorMessage("群名字不能为空")
 	}
+
 	group_id := utils.NewUUID()
 	stmtIn, err := dbConn.Prepare("INSERT INTO table_friend_group (group_id,group_name,group_portrait,user_id,user_type,chat_pwd)VALUES(?,?,?,?,?,?)")
 	if err != nil {
 		return chatGroup, err
 	}
 
-	_, err = stmtIn.Exec(group_id, userBean.UserName+"的群聊天", userBean.HeadPortrait, user_id, "1", "")
+	_, err = stmtIn.Exec(group_id, group_name, "", user_id, "1", "")
 	_ = stmtIn.Close()
 	if err != nil {
 		return chatGroup, err
@@ -31,38 +32,48 @@ func GroupRegister(user_id string) (bean.ChatGroup, error) {
 		UserId:        user_id,
 		UserType:      "1",
 		ChatPwd:       "",
-		GroupName:     userBean.UserName + "的群聊天",
-		GroupPortrait: userBean.HeadPortrait,
+		GroupName:     group_name,
+		GroupPortrait: "",
 	}
 	return chatGroup, err
 }
-func GroupAddUser(group_id, user_id string) error {
-	if len(user_id) == 0 || len(group_id) == 0 {
+func GroupAddUser(group_id, user_ids string) error {
+	if len(user_ids) == 0 || len(group_id) == 0 {
 		return bean.NewErrorMessage("信息不能为空")
 	}
 	group, err := GroupSelectMsg(group_id)
 	if err != nil {
 		return err
 	}
-	stmtOut, err := dbConn.Prepare("SELECT * FROM table_friend_group  WHERE user_id = ? AND group_id = ?")
+	//stmtOut, err := dbConn.Prepare("SELECT * FROM table_friend_group  WHERE user_id = ? AND group_id = ?")
+	//if err != nil {
+	//	return err
+	//}
+	//rows, err := stmtOut.Query(user_ids, group_id)
+	//if err != nil {
+	//	return err
+	//}
+	//if rows.Next() {
+	//	return bean.NewErrorMessage("已经在这个群里了!")
+	//}
+	userIds := strings.Split(user_ids, "#")
+	if len(userIds) == 0 {
+		//return bean.NewErrorMessage("人员ID不能为空")
+		return nil
+	}
+	stmtIn, err := dbConn.Prepare("REPLACE INTO table_friend_group (group_id,user_id,user_type,chat_pwd,group_name,group_portrait)VALUES(?,?,?,?,?,?)")
 	if err != nil {
 		return err
 	}
-	rows, err := stmtOut.Query(user_id, group_id)
-	if err != nil {
-		return err
+	for _, id := range userIds {
+		if len(id) != 0 {
+			_, err = stmtIn.Exec(group_id, id, "0", "", group.GroupName, group.GroupPortrait)
+			if err != nil {
+				return err
+			}
+		}
 	}
-	if rows.Next() {
-		return bean.NewErrorMessage("已经在这个群里了!")
-	}
-	stmtIn, err := dbConn.Prepare("INSERT INTO table_friend_group (group_id,user_id,user_type,chat_pwd,group_name,group_portrait)VALUES(?,?,?,?,?,?)")
-	if err != nil {
-		return err
-	}
-	_, err = stmtIn.Exec(group_id, user_id, "0", "", group.GroupName, group.GroupPortrait)
-	if err != nil {
-		return err
-	}
+
 	_ = stmtIn.Close()
 	return err
 }

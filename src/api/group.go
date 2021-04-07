@@ -10,18 +10,19 @@ import (
 //创建组
 func GroupRegisterHttp(_ http.ResponseWriter, r *http.Request) error {
 	user_id := httpUtils.GetValueFormRequest(r, "user_id")
-	group, err := dbops.GroupRegister(user_id)
+	group_name := httpUtils.GetValueFormRequest(r, "group_name")
+	group, err := dbops.GroupRegister(user_id, group_name)
 	if err != nil {
 		return err
 	}
 	return bean.NewSucceedMessage(group)
 }
 
-//往组里面加人
+//往组里面加人user_ids 多个人用#分开
 func GroupAddUserHttp(_ http.ResponseWriter, r *http.Request) error {
-	user_id := httpUtils.GetValueFormRequest(r, "user_id")
+	user_ids := httpUtils.GetValueFormRequest(r, "user_ids")
 	group_id := httpUtils.GetValueFormRequest(r, "group_id")
-	err := dbops.GroupAddUser(group_id, user_id)
+	err := dbops.GroupAddUser(group_id, user_ids)
 	if err != nil {
 		return err
 	}

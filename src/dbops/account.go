@@ -1,6 +1,7 @@
 package dbops
 
 import (
+	"database/sql"
 	_ "database/sql"
 	"gitee.com/DengAnbang/PrivateChatService/src/bean"
 	"gitee.com/DengAnbang/goutils/dbutils"
@@ -71,6 +72,36 @@ func UserSelectByAccount(account string) (bean.UserBean, error) {
 		user = *bean.NewUserBean(mapStrings)
 	}
 	return user, err
+}
+func UserSelectByFuzzySearch(word string) ([]bean.UserBean, error) {
+	var userBeans = make([]bean.UserBean, 0)
+	if len(word) == 0 {
+		return userBeans, bean.NewErrorMessage("搜索信息不能为空")
+	}
+	userBean, err := UserSelectByAccount(word)
+
+	if userBean.Account != "" {
+		userBeans = append(userBeans, userBean)
+	}
+
+	stmtOut, err := dbConn.Prepare("SELECT * FROM table_user WHERE user_name like CONCAT('%',?,'%')")
+	if err != nil {
+		return userBeans, err
+	}
+	defer stmtOut.Close()
+	rows, err := stmtOut.Query(word)
+	if err != nil {
+		return userBeans, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		mapStrings, err := dbutils.GetRowsMap(rows)
+		if err != nil {
+			return userBeans, err
+		}
+		userBeans = append(userBeans, *bean.NewUserBean(mapStrings))
+	}
+	return userBeans, err
 }
 func UserSelectById(user_id string) (bean.UserBean, error) {
 	var user bean.UserBean
@@ -158,51 +189,84 @@ func UserSecurityUpdate(account, q1, a1, q2, a2 string) error {
 	_ = stmtIn.Close()
 	return err
 }
+
+//func UserAddFriend(user_id, to_user_id, friend_type string) error {
+//	if len(user_id) == 0 || len(to_user_id) == 0 {
+//		return bean.NewErrorMessage("好友不能为空")
+//	}
+//	s, err := UserSelectFriendType(user_id, to_user_id)
+//	if s == "1" {
+//		return bean.NewErrorMessage("已经是好友关系了")
+//	} else if len(s) == 0 {
+//		if len(friend_type) == 0 {
+//			friend_type = "0"
+//		} else if friend_type == "1" { //1表示直接添加好友
+//			stmtIn, err := dbConn.Prepare("REPLACE INTO table_user_friend (user_id,to_user_id,friend_type)VALUES(?,?,?)")
+//			if err != nil {
+//				return err
+//			}
+//			_, err = stmtIn.Exec(to_user_id, user_id, friend_type)
+//			_ = stmtIn.Close()
+//			if err != nil {
+//				return err
+//			}
+//		}
+//		stmtIn, err := dbConn.Prepare("INSERT INTO table_user_friend (user_id,to_user_id,friend_type)VALUES(?,?,?)")
+//		if err != nil {
+//			return err
+//		}
+//		_, err = stmtIn.Exec(user_id, to_user_id, friend_type)
+//		_ = stmtIn.Close()
+//		if err != nil {
+//			return err
+//		}
+//	} else {
+//		return bean.NewErrorMessage("对方不允许你添加为好友")
+//	}
+//
+//	return err
+//}
 func UserAddFriend(user_id, to_user_id, friend_type string) error {
 	if len(user_id) == 0 || len(to_user_id) == 0 {
 		return bean.NewErrorMessage("好友不能为空")
 	}
+	if user_id == to_user_id {
+		return bean.NewErrorMessage("不能添加自己")
+	}
 	s, err := UserSelectFriendType(user_id, to_user_id)
 	if s == "1" {
 		return bean.NewErrorMessage("已经是好友关系了")
-	} else if len(s) == 0 {
-		if len(friend_type) == 0 {
-			friend_type = "0"
-		} else if friend_type == "1" { //1表示直接添加好友
-			stmtIn, err := dbConn.Prepare("INSERT INTO table_user_friend (user_id,to_user_id,friend_type)VALUES(?,?,?)")
-			if err != nil {
-				return err
-			}
-			_, err = stmtIn.Exec(to_user_id, user_id, friend_type)
-			_ = stmtIn.Close()
-			if err != nil {
-				return err
-			}
-		}
-		stmtIn, err := dbConn.Prepare("INSERT INTO table_user_friend (user_id,to_user_id,friend_type)VALUES(?,?,?)")
-		if err != nil {
-			return err
-		}
-		_, err = stmtIn.Exec(user_id, to_user_id, friend_type)
-		_ = stmtIn.Close()
-		if err != nil {
-			return err
-		}
-	} else {
-		return bean.NewErrorMessage("对方不允许你添加为好友")
 	}
-
+	if len(friend_type) == 0 {
+		friend_type = "0"
+	}
+	stmtIn, err := dbConn.Prepare("REPLACE INTO table_user_friend (user_id,to_user_id,friend_type)VALUES(?,?,?)")
+	if err != nil {
+		return err
+	}
+	_, err = stmtIn.Exec(user_id, to_user_id, friend_type)
+	_ = stmtIn.Close()
+	if err != nil {
+		return err
+	}
+	_ = stmtIn.Close()
 	return err
 }
 func UserRemoveFriend(user_id, to_user_id string) error {
 	if len(user_id) == 0 || len(to_user_id) == 0 {
 		return bean.NewErrorMessage("好友不能为空")
 	}
-	stmtIn, err := dbConn.Prepare("DELETE FROM table_user_friend WHERE to_user_id=?")
+	stmtIn, err := dbConn.Prepare("DELETE FROM table_user_friend WHERE to_user_id=? AND user_id=?")
 	if err != nil {
 		return err
 	}
-	_, err = stmtIn.Exec(to_user_id)
+	_, _ = stmtIn.Exec(to_user_id, user_id)
+	_ = stmtIn.Close()
+	stmtIn, err = dbConn.Prepare("DELETE FROM table_user_friend WHERE to_user_id=? AND user_id=?")
+	if err != nil {
+		return err
+	}
+	_, _ = stmtIn.Exec(user_id, to_user_id)
 	_ = stmtIn.Close()
 	if err != nil {
 		return err
@@ -219,13 +283,20 @@ func UserSelectFriend(user_id, friend_type string) ([]bean.UserBean, error) {
 	if len(friend_type) == 0 {
 		friend_type = "1"
 	}
-
-	stmtOut, err := dbConn.Prepare("SELECT * FROM table_user_friend LEFT OUTER JOIN table_user ON table_user_friend.to_user_id=table_user.user_id WHERE table_user_friend.user_id = ? AND table_user_friend.friend_type = ?")
+	var stmtOut *sql.Stmt
+	if friend_type == "1" {
+		stmtOut, err = dbConn.Prepare("SELECT * FROM table_user_friend LEFT OUTER JOIN table_user ON (if(table_user_friend.to_user_id = ?, table_user_friend.user_id,table_user_friend.to_user_id)) = table_user.user_id WHERE (table_user_friend.user_id = ? OR to_user_id = ?) AND friend_type = ?")
+	}
+	if friend_type == "2" {
+		stmtOut, err = dbConn.Prepare("SELECT * FROM table_user_friend LEFT OUTER JOIN table_user ON (if(table_user_friend.to_user_id = ?, table_user_friend.user_id,table_user_friend.to_user_id)) = table_user.user_id WHERE (to_user_id = ? AND  to_user_id = ?) AND friend_type = ?")
+	}
+	//stmtOut, err := dbConn.Prepare("SELECT * FROM table_user_friend LEFT OUTER JOIN table_user ON table_user_friend.to_user_id=table_user.user_id WHERE table_user_friend.user_id = ? AND table_user_friend.friend_type = ?")
+	//stmtOut, err := dbConn.Prepare("SELECT * FROM table_user_friend LEFT OUTER JOIN table_user ON (if(table_user_friend.to_user_id = ?, table_user_friend.user_id,table_user_friend.to_user_id)) = table_user.user_id WHERE table_user_friend.user_id = ? OR to_user_id = ? AND friend_type = ?")
 	if err != nil {
 		return userBeans, err
 	}
 	defer stmtOut.Close()
-	rows, err := stmtOut.Query(user_id, "1")
+	rows, err := stmtOut.Query(user_id, user_id, user_id, friend_type)
 	if err != nil {
 		return userBeans, err
 	}

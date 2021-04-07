@@ -25,19 +25,20 @@ var (
 	PublicUpdatesUpload   = "/public/app/updates/upload"
 	PublicUpdatesCheck    = "/public/app/updates/check"
 	//用户相关
-	UserRegister        = "/app/user/register"
-	UserLogin           = "/app/user/login"
-	UserUpdate          = "/app/user/update"
-	UserSecurityUpdate  = "/app/user/security/update"
-	UserSelectSecurity  = "/app/user/select/security"
-	UserSelectByAccount = "/app/user/select/by/account"
-	UserSelectById      = "/app/user/select/by/id"
-	UserAddFriend       = "/app/user/add/friend"
-	UserRemoveFriend    = "/app/user/remove/friend"
-	UserSelectFriend    = "/app/user/select/friend"
+	UserRegister            = "/app/user/register"
+	UserLogin               = "/app/user/login"
+	UserUpdate              = "/app/user/update"
+	UserSecurityUpdate      = "/app/user/security/update"
+	UserSelectSecurity      = "/app/user/select/security"
+	UserSelectByAccount     = "/app/user/select/by/account"
+	UserSelectById          = "/app/user/select/by/id"
+	UserSelectByFuzzySearch = "/app/user/select/by/fuzzy/search"
+	UserAddFriend           = "/app/user/add/friend"
+	UserRemoveFriend        = "/app/user/remove/friend"
+	UserSelectFriend        = "/app/user/select/friend"
 
 	GroupRegister      = "/app/group/register"
-	GroupAddUser       = "/app/group/add/user"
+	GroupAddUser       = "/app/group/add/users"
 	GroupRemoveUser    = "/app/group/remove/user"
 	GroupRemoveUserAll = "/app/group/remove/user/all"
 	GroupSelectList    = "/app/group/select/list"
@@ -64,6 +65,7 @@ func Run(port string, mux *http.ServeMux) {
 	Apis[UserSelectSecurity] = UserSelectSecurityByAccountHttp
 	Apis[UserSelectByAccount] = UserSelectByAccountHttp
 	Apis[UserSelectById] = UserSelectByIdHttp
+	Apis[UserSelectByFuzzySearch] = UserSelectByFuzzySearchHttp
 	Apis[UserAddFriend] = UserAddFriendHttp
 	Apis[UserRemoveFriend] = UserRemoveFriendHttp
 	Apis[UserSelectFriend] = UserSelectFriendHttp
