@@ -18,10 +18,11 @@ func CreateUserTable(db *sql.DB) error {
 	    created TIMESTAMP NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
 	    PRIMARY KEY (id)
 	)AUTO_INCREMENT = 0`)
-	_ = AddColumn(db, "table_user", " question1", "", "问题1")
-	_ = AddColumn(db, "table_user", " answer1", "", "答案1")
-	_ = AddColumn(db, "table_user", " question2", "", "问题2")
-	_ = AddColumn(db, "table_user", " answer2", "", "答案2")
+	_ = AddColumn(db, "table_user", "question1", "", "问题1")
+	_ = AddColumn(db, "table_user", "answer1", "", "答案1")
+	_ = AddColumn(db, "table_user", "question2", "", "问题2")
+	_ = AddColumn(db, "table_user", "answer2", "", "答案2")
+	_ = AddColumn(db, "table_user", "permissions", "0", "权限代码,0:默认,1:超级管理员")
 	return err
 }
 

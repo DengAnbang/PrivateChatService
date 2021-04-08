@@ -6,6 +6,7 @@ type UserBean struct {
 	Account      string `json:"account"`
 	HeadPortrait string `json:"head_portrait"`
 	VipTime      string `json:"vip_time"`
+	Permissions  string `json:"permissions"`
 	Pwd          string `json:"-"`
 }
 
@@ -16,6 +17,7 @@ func NewUserBean(data map[string]string) *UserBean {
 		UserId:       data["user_id"],
 		VipTime:      data["vip_time"],
 		HeadPortrait: data["head_portrait"],
+		Permissions:  data["permissions"],
 		Pwd:          data["pwd"],
 	}
 }
