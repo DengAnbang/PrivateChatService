@@ -3,6 +3,8 @@ package api
 import (
 	"gitee.com/DengAnbang/PrivateChatService/src/bean"
 	"gitee.com/DengAnbang/PrivateChatService/src/dbops"
+	"gitee.com/DengAnbang/PrivateChatService/src/socket/push"
+	"gitee.com/DengAnbang/PrivateChatService/src/socket/socketConst"
 	"gitee.com/DengAnbang/goutils/timeUtils"
 
 	"gitee.com/DengAnbang/goutils/httpUtils"
@@ -138,7 +140,7 @@ func UserSelectByIdHttp(_ http.ResponseWriter, r *http.Request) error {
 	return bean.NewSucceedMessage(userBean)
 }
 
-func UserAddFriendHttp(_ http.ResponseWriter, r *http.Request) error {
+func UserFriendAddHttp(_ http.ResponseWriter, r *http.Request) error {
 	user_id := httpUtils.GetValueFormRequest(r, "user_id")
 	to_user_id := httpUtils.GetValueFormRequest(r, "to_user_id")
 	friend_type := httpUtils.GetValueFormRequest(r, "friend_type")
@@ -146,9 +148,22 @@ func UserAddFriendHttp(_ http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
+	//申请好友,通知对方
+	if friend_type == "2" {
+		data := bean.SocketData{
+			TargetId: to_user_id,
+			SenderId: user_id,
+			Type:     socketConst.TYPE_FRIEND_ADD,
+			Msg:      "",
+			DebugMsg: "",
+			Data:     "",
+		}
+		push.PushSocket(&data)
+	}
+
 	return bean.NewSucceedMessage("申请成功!")
 }
-func UserRemoveFriendHttp(_ http.ResponseWriter, r *http.Request) error {
+func UserFriendDeleteHttp(_ http.ResponseWriter, r *http.Request) error {
 	user_id := httpUtils.GetValueFormRequest(r, "user_id")
 	to_user_id := httpUtils.GetValueFormRequest(r, "to_user_id")
 	err := dbops.UserRemoveFriend(user_id, to_user_id)

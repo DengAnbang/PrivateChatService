@@ -33,8 +33,8 @@ var (
 	UserSelectByAccount     = "/app/user/select/by/account"
 	UserSelectById          = "/app/user/select/by/id"
 	UserSelectByFuzzySearch = "/app/user/select/by/fuzzy/search"
-	UserAddFriend           = "/app/user/add/friend"
-	UserRemoveFriend        = "/app/user/remove/friend"
+	UserFriendAdd           = "/app/user/friend/add"
+	UserFriendDelete        = "/app/user/friend/delete"
 	UserSelectFriend        = "/app/user/select/friend"
 
 	GroupRegister      = "/app/group/register"
@@ -66,8 +66,9 @@ func Run(port string, mux *http.ServeMux) {
 	Apis[UserSelectByAccount] = UserSelectByAccountHttp
 	Apis[UserSelectById] = UserSelectByIdHttp
 	Apis[UserSelectByFuzzySearch] = UserSelectByFuzzySearchHttp
-	Apis[UserAddFriend] = UserAddFriendHttp
-	Apis[UserRemoveFriend] = UserRemoveFriendHttp
+	Apis[UserFriendAdd] = UserFriendAddHttp
+	Apis[UserFriendDelete] = UserFriendDeleteHttp
+
 	Apis[UserSelectFriend] = UserSelectFriendHttp
 	//群相关
 	Apis[GroupRegister] = GroupRegisterHttp
