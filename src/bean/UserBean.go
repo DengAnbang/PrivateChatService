@@ -1,5 +1,10 @@
 package bean
 
+import (
+	"gitee.com/DengAnbang/goutils/timeUtils"
+	"strconv"
+)
+
 type UserBean struct {
 	UserName     string `json:"user_name"`
 	UserId       string `json:"user_id"`
@@ -38,7 +43,12 @@ func (u *UserBean) Modify(new UserBean) {
 		u.Pwd = new.Pwd
 	}
 	if len(new.VipTime) != 0 {
-		u.VipTime = new.VipTime
+		addTime, _ := strconv.ParseInt(new.VipTime, 10, 32)
+		uTime, _ := strconv.ParseInt(u.VipTime, 10, 64)
+		if uTime < timeUtils.GetTimestamp() {
+			uTime = timeUtils.GetTimestamp()
+		}
+		u.VipTime = strconv.FormatInt(uTime+(addTime*24*60*60), 10)
 	}
 }
 

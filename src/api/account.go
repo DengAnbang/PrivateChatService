@@ -6,6 +6,7 @@ import (
 	"gitee.com/DengAnbang/PrivateChatService/src/socket/push"
 	"gitee.com/DengAnbang/PrivateChatService/src/socket/socketConst"
 	"gitee.com/DengAnbang/goutils/timeUtils"
+	"strconv"
 
 	"gitee.com/DengAnbang/goutils/httpUtils"
 	"net/http"
@@ -69,12 +70,29 @@ func UserLoginHttp(_ http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
+	timestamp := timeUtils.GetTimestamp()
+	vipTime, err := strconv.ParseInt(user.VipTime, 10, 64)
+	if err != nil {
+		return err
+	}
+	if timestamp >= vipTime {
+		return bean.NewErrorMessage("vip时间已经过期了")
+	}
 	return bean.NewSucceedMessage(user)
 
 }
 func UserSelectByFuzzySearchHttp(_ http.ResponseWriter, r *http.Request) error {
 	word := httpUtils.GetValueFormRequest(r, "word")
 	user, err := dbops.UserSelectByFuzzySearch(word)
+	if err != nil {
+		return err
+	}
+	return bean.NewSucceedMessage(user)
+
+}
+func UserSelectByFuzzySearchAllHttp(_ http.ResponseWriter, r *http.Request) error {
+	word := httpUtils.GetValueFormRequest(r, "word")
+	user, err := dbops.UserSelectByFuzzySearchAll(word)
 	if err != nil {
 		return err
 	}
@@ -94,6 +112,13 @@ func UserUpdateHttp(_ http.ResponseWriter, r *http.Request) error {
 		HeadPortrait: headPortrait,
 		VipTime:      vip_time,
 		Pwd:          pwd,
+	}
+	if len(vip_time) > 0 {
+		_, err := strconv.ParseInt(vip_time, 10, 32)
+		if err != nil {
+			return bean.NewErrorMessage("vip时间格式化错误,vip时间只能是数字表示天数").SetDeBugMessage(err.Error())
+		}
+
 	}
 	user, err := dbops.UserUpdate(userBean)
 	if err != nil {

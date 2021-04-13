@@ -54,6 +54,21 @@ func CreateFriendListTable(db *sql.DB) error {
 	return err
 }
 
+//充值的表
+func CreateRechargeTable(db *sql.DB) error {
+	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS table_recharge (
+	    id INT(64) NOT NULL AUTO_INCREMENT COMMENT '数据id',
+	    user_id VARCHAR(64) NOT NULL  COMMENT '用户id',
+	    execution_user_id VARCHAR(64) NOT NULL  COMMENT '执行的人的id',
+	    money VARCHAR(64) NOT NULL  COMMENT '充值的金额',
+	    day VARCHAR(64) NOT NULL  COMMENT '充值天数',
+	    recharge_type VARCHAR(64) NOT NULL  COMMENT '充值类型(0:管理员,1:支付宝)',
+	    created TIMESTAMP NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
+	    PRIMARY KEY (id)
+	)AUTO_INCREMENT = 0`)
+	return err
+}
+
 func AddColumn(db *sql.DB, tableName, columnName string, defaultValue string, comment string) error {
 	result, err := db.Prepare(`SELECT count(*) FROM information_schema.columns WHERE table_name = ? AND column_name = ?`)
 	if err != nil {

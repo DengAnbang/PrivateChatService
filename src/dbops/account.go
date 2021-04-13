@@ -6,7 +6,9 @@ import (
 	"gitee.com/DengAnbang/PrivateChatService/src/bean"
 	"gitee.com/DengAnbang/goutils/dbutils"
 	"gitee.com/DengAnbang/goutils/loge"
+	"gitee.com/DengAnbang/goutils/timeUtils"
 	"gitee.com/DengAnbang/goutils/utils"
+	"strconv"
 )
 
 func UserRegister(userBean bean.UserBean) (bean.UserBean, error) {
@@ -54,7 +56,7 @@ func UserLogin(account, pwd string) (user bean.UserBean, err error) {
 }
 func UserSelectByAccount(account string) (bean.UserBean, error) {
 	var user bean.UserBean
-	stmtOut, err := dbConn.Prepare("SELECT * FROM table_user WHERE account = ?")
+	stmtOut, err := dbConn.Prepare("SELECT * ,UNIX_TIMESTAMP(table_user.vip_time) as vip_time FROM table_user WHERE account = ?")
 	if err != nil {
 		return user, err
 	}
@@ -79,12 +81,14 @@ func UserSelectByFuzzySearch(word string) ([]bean.UserBean, error) {
 		return userBeans, bean.NewErrorMessage("搜索信息不能为空")
 	}
 	userBean, err := UserSelectByAccount(word)
-
+	if err != nil {
+		return userBeans, err
+	}
 	if userBean.Account != "" {
 		userBeans = append(userBeans, userBean)
 	}
 
-	stmtOut, err := dbConn.Prepare("SELECT * FROM table_user WHERE user_name like CONCAT('%',?,'%')")
+	stmtOut, err := dbConn.Prepare("SELECT *  ,UNIX_TIMESTAMP(table_user.vip_time) as vip_time FROM table_user WHERE user_name like CONCAT('%',?,'%')")
 	if err != nil {
 		return userBeans, err
 	}
@@ -103,9 +107,39 @@ func UserSelectByFuzzySearch(word string) ([]bean.UserBean, error) {
 	}
 	return userBeans, err
 }
+func UserSelectByFuzzySearchAll(word string) ([]bean.UserBean, error) {
+	var userBeans = make([]bean.UserBean, 0)
+	if len(word) != 0 {
+		beans, err := UserSelectByFuzzySearch(word)
+		if err != nil {
+			return beans, err
+		}
+		return beans, err
+	} else {
+		stmtOut, err := dbConn.Prepare("SELECT *  ,UNIX_TIMESTAMP(table_user.vip_time) as vip_time FROM table_user")
+		if err != nil {
+			return userBeans, err
+		}
+		defer stmtOut.Close()
+		rows, err := stmtOut.Query()
+		if err != nil {
+			return userBeans, err
+		}
+		defer rows.Close()
+		for rows.Next() {
+			mapStrings, err := dbutils.GetRowsMap(rows)
+			if err != nil {
+				return userBeans, err
+			}
+			userBeans = append(userBeans, *bean.NewUserBean(mapStrings))
+		}
+	}
+
+	return userBeans, err
+}
 func UserSelectById(user_id string) (bean.UserBean, error) {
 	var user bean.UserBean
-	stmtOut, err := dbConn.Prepare("SELECT * FROM table_user WHERE user_id = ?")
+	stmtOut, err := dbConn.Prepare("SELECT *  ,UNIX_TIMESTAMP(table_user.vip_time) as vip_time FROM table_user WHERE user_id = ?")
 	if err != nil {
 		return user, err
 	}
@@ -142,7 +176,16 @@ func UserUpdate(userBean bean.UserBean) (bean.UserBean, error) {
 	if err != nil {
 		return user, err
 	}
-	_, err = stmtIn.Exec(user.Pwd, user.UserName, user.HeadPortrait, user.VipTime, user.Account)
+	timeUtils.GetTimestampString()
+	vipTime, err := strconv.ParseInt(user.VipTime, 10, 64)
+	if err != nil {
+		return user, err
+	}
+	format := timeUtils.GetTimeFormat(vipTime, timeUtils.DATE_TIME_FMT)
+	_, err = stmtIn.Exec(user.Pwd, user.UserName, user.HeadPortrait, format, user.Account)
+	if err != nil {
+		return user, err
+	}
 	_ = stmtIn.Close()
 	return UserSelectByAccount(user.Account)
 }
@@ -285,10 +328,10 @@ func UserSelectFriend(user_id, friend_type string) ([]bean.UserBean, error) {
 	}
 	var stmtOut *sql.Stmt
 	if friend_type == "1" {
-		stmtOut, err = dbConn.Prepare("SELECT * FROM table_user_friend LEFT OUTER JOIN table_user ON (if(table_user_friend.to_user_id = ?, table_user_friend.user_id,table_user_friend.to_user_id)) = table_user.user_id WHERE (table_user_friend.user_id = ? OR to_user_id = ?) AND friend_type = ?")
+		stmtOut, err = dbConn.Prepare("SELECT *  ,UNIX_TIMESTAMP(table_user.vip_time) as vip_time FROM table_user_friend LEFT OUTER JOIN table_user ON (if(table_user_friend.to_user_id = ?, table_user_friend.user_id,table_user_friend.to_user_id)) = table_user.user_id WHERE (table_user_friend.user_id = ? OR to_user_id = ?) AND friend_type = ?")
 	}
 	if friend_type == "2" {
-		stmtOut, err = dbConn.Prepare("SELECT * FROM table_user_friend LEFT OUTER JOIN table_user ON (if(table_user_friend.to_user_id = ?, table_user_friend.user_id,table_user_friend.to_user_id)) = table_user.user_id WHERE (to_user_id = ? AND  to_user_id = ?) AND friend_type = ?")
+		stmtOut, err = dbConn.Prepare("SELECT *  ,UNIX_TIMESTAMP(table_user.vip_time) as vip_time FROM table_user_friend LEFT OUTER JOIN table_user ON (if(table_user_friend.to_user_id = ?, table_user_friend.user_id,table_user_friend.to_user_id)) = table_user.user_id WHERE (to_user_id = ? AND  to_user_id = ?) AND friend_type = ?")
 	}
 	//stmtOut, err := dbConn.Prepare("SELECT * FROM table_user_friend LEFT OUTER JOIN table_user ON table_user_friend.to_user_id=table_user.user_id WHERE table_user_friend.user_id = ? AND table_user_friend.friend_type = ?")
 	//stmtOut, err := dbConn.Prepare("SELECT * FROM table_user_friend LEFT OUTER JOIN table_user ON (if(table_user_friend.to_user_id = ?, table_user_friend.user_id,table_user_friend.to_user_id)) = table_user.user_id WHERE table_user_friend.user_id = ? OR to_user_id = ? AND friend_type = ?")

@@ -87,6 +87,9 @@ func createTable(db *sql.DB) error {
 	if err = CreateFriendListTable(db); err != nil {
 		return err
 	}
+	if err = CreateRechargeTable(db); err != nil {
+		return err
+	}
 	return nil
 }
 

@@ -25,17 +25,18 @@ var (
 	PublicUpdatesUpload   = "/public/app/updates/upload"
 	PublicUpdatesCheck    = "/public/app/updates/check"
 	//用户相关
-	UserRegister            = "/app/user/register"
-	UserLogin               = "/app/user/login"
-	UserUpdate              = "/app/user/update"
-	UserSecurityUpdate      = "/app/user/security/update"
-	UserSelectSecurity      = "/app/user/select/security"
-	UserSelectByAccount     = "/app/user/select/by/account"
-	UserSelectById          = "/app/user/select/by/id"
-	UserSelectByFuzzySearch = "/app/user/select/by/fuzzy/search"
-	UserFriendAdd           = "/app/user/friend/add"
-	UserFriendDelete        = "/app/user/friend/delete"
-	UserSelectFriend        = "/app/user/select/friend"
+	UserRegister               = "/app/user/register"
+	UserLogin                  = "/app/user/login"
+	UserUpdate                 = "/app/user/update"
+	UserSecurityUpdate         = "/app/user/security/update"
+	UserSelectSecurity         = "/app/user/select/security"
+	UserSelectByAccount        = "/app/user/select/by/account"
+	UserSelectById             = "/app/user/select/by/id"
+	UserSelectByFuzzySearch    = "/app/user/select/by/fuzzy/search"
+	UserSelectByFuzzySearchAll = "/app/user/select/by/fuzzy/search/all"
+	UserFriendAdd              = "/app/user/friend/add"
+	UserFriendDelete           = "/app/user/friend/delete"
+	UserSelectFriend           = "/app/user/select/friend"
 
 	GroupRegister      = "/app/group/register"
 	GroupAddUser       = "/app/group/add/users"
@@ -44,6 +45,12 @@ var (
 	GroupSelectList    = "/app/group/select/list"
 	GroupSelectUser    = "/app/group/select/user"
 	GroupSelectUserMsg = "/app/group/select/user/msg"
+
+	RechargeAdd                     = "/app/recharge/add"
+	RechargeSelectByType            = "/app/select/by/type"
+	RechargeSelectByUserId          = "/app/select/by/user/id"
+	RechargeSelectByExecutionUserId = "/app/select/by/execution/user/id"
+	RechargeSelectByTime            = "/app/select/by/time"
 )
 
 func Run(port string, mux *http.ServeMux) {
@@ -66,6 +73,7 @@ func Run(port string, mux *http.ServeMux) {
 	Apis[UserSelectByAccount] = UserSelectByAccountHttp
 	Apis[UserSelectById] = UserSelectByIdHttp
 	Apis[UserSelectByFuzzySearch] = UserSelectByFuzzySearchHttp
+	Apis[UserSelectByFuzzySearchAll] = UserSelectByFuzzySearchAllHttp
 	Apis[UserFriendAdd] = UserFriendAddHttp
 	Apis[UserFriendDelete] = UserFriendDeleteHttp
 
@@ -78,6 +86,12 @@ func Run(port string, mux *http.ServeMux) {
 	Apis[GroupSelectList] = GroupSelectListHttp
 	Apis[GroupSelectUser] = GroupSelectUserHttp
 	Apis[GroupSelectUserMsg] = GroupSelectUserMsgHttp
+	//充值相关
+	Apis[RechargeAdd] = RechargeAddHttp
+	Apis[RechargeSelectByType] = RechargeSelectByTypeHttp
+	Apis[RechargeSelectByUserId] = RechargeSelectByUserIdHttp
+	Apis[RechargeSelectByExecutionUserId] = RechargeSelectByExecutionUserIdHttp
+	Apis[RechargeSelectByTime] = RechargeSelectByTimeHttp
 
 	httpUtils.FileHandle(mux, code.RootName, code.RootPath)
 	for k, v := range Apis {
