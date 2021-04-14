@@ -76,7 +76,7 @@ func UserLoginHttp(_ http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	if timestamp >= vipTime {
-		return bean.NewErrorMessage("vip时间已经过期了")
+		return bean.NewSucceedMessage(user).SetCode("2").SetMsg("账号已经过期了")
 	}
 	return bean.NewSucceedMessage(user)
 

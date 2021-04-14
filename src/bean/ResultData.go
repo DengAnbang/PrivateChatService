@@ -36,6 +36,14 @@ func (r *ResultData) SetDeBugMessage(message string) *ResultData {
 	r.DebugMessage = message
 	return r
 }
+func (r *ResultData) SetCode(code string) *ResultData {
+	r.Code = code
+	return r
+}
+func (r *ResultData) SetMsg(msg string) *ResultData {
+	r.Msg = msg
+	return r
+}
 func (r *ResultData) WriterResponse(w http.ResponseWriter) {
 	bytes, err := json.Marshal(r)
 	if err != nil {
