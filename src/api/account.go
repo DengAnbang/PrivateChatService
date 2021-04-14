@@ -127,6 +127,17 @@ func UserUpdateHttp(_ http.ResponseWriter, r *http.Request) error {
 	return bean.NewSucceedMessage(user)
 }
 
+//账号充值
+func UserRechargeHttp(_ http.ResponseWriter, r *http.Request) error {
+	user_id := httpUtils.GetValueFormRequest(r, "user_id")
+	pay_id := httpUtils.GetValueFormRequest(r, "pay_id")
+	err := dbops.UserRecharge(user_id, pay_id)
+	if err != nil {
+		return err
+	}
+	return bean.NewSucceedMessage("充值成功!")
+}
+
 //安全问题接口
 func UserSecurityUpdateHttp(_ http.ResponseWriter, r *http.Request) error {
 	account := httpUtils.GetValueFormRequest(r, "account")
@@ -192,10 +203,6 @@ func UserFriendDeleteHttp(_ http.ResponseWriter, r *http.Request) error {
 	user_id := httpUtils.GetValueFormRequest(r, "user_id")
 	to_user_id := httpUtils.GetValueFormRequest(r, "to_user_id")
 	err := dbops.UserRemoveFriend(user_id, to_user_id)
-	if err != nil {
-		return err
-	}
-	err = dbops.UserRemoveFriend(to_user_id, user_id)
 	if err != nil {
 		return err
 	}

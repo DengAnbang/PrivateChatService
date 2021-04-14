@@ -28,6 +28,7 @@ var (
 	UserRegister               = "/app/user/register"
 	UserLogin                  = "/app/user/login"
 	UserUpdate                 = "/app/user/update"
+	UserRecharge               = "/app/user/recharge"
 	UserSecurityUpdate         = "/app/user/security/update"
 	UserSelectSecurity         = "/app/user/select/security"
 	UserSelectByAccount        = "/app/user/select/by/account"
@@ -51,6 +52,12 @@ var (
 	RechargeSelectByUserId          = "/app/select/by/user/id"
 	RechargeSelectByExecutionUserId = "/app/select/by/execution/user/id"
 	RechargeSelectByTime            = "/app/select/by/time"
+	RechargeSelectAll               = "/app/select/all"
+	PriceAdd                        = "/app/price/add"
+	PriceDelete                     = "/app/price/delete"
+	PriceUpdate                     = "/app/price/update"
+	PriceSelectById                 = "/app/price/select/by/id"
+	PriceSelectAll                  = "/app/price/select/all"
 )
 
 func Run(port string, mux *http.ServeMux) {
@@ -68,6 +75,7 @@ func Run(port string, mux *http.ServeMux) {
 	Apis[UserRegister] = UserRegisterHttp
 	Apis[UserLogin] = UserLoginHttp
 	Apis[UserUpdate] = UserUpdateHttp
+	Apis[UserRecharge] = UserRechargeHttp
 	Apis[UserSecurityUpdate] = UserSecurityUpdateHttp
 	Apis[UserSelectSecurity] = UserSelectSecurityByAccountHttp
 	Apis[UserSelectByAccount] = UserSelectByAccountHttp
@@ -92,6 +100,13 @@ func Run(port string, mux *http.ServeMux) {
 	Apis[RechargeSelectByUserId] = RechargeSelectByUserIdHttp
 	Apis[RechargeSelectByExecutionUserId] = RechargeSelectByExecutionUserIdHttp
 	Apis[RechargeSelectByTime] = RechargeSelectByTimeHttp
+	Apis[RechargeSelectAll] = RechargeSelectAllHttp
+	//充值的金额设置
+	Apis[PriceAdd] = PriceAddHttp
+	Apis[PriceDelete] = PriceDeleteHttp
+	Apis[PriceUpdate] = PriceUpdateHttp
+	Apis[PriceSelectById] = PriceSelectByIdHttp
+	Apis[PriceSelectAll] = PriceSelectAllHttp
 
 	httpUtils.FileHandle(mux, code.RootName, code.RootPath)
 	for k, v := range Apis {

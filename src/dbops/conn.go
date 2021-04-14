@@ -90,6 +90,9 @@ func createTable(db *sql.DB) error {
 	if err = CreateRechargeTable(db); err != nil {
 		return err
 	}
+	if err = CreatePriceTable(db); err != nil {
+		return err
+	}
 	return nil
 }
 

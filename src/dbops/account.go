@@ -176,7 +176,6 @@ func UserUpdate(userBean bean.UserBean) (bean.UserBean, error) {
 	if err != nil {
 		return user, err
 	}
-	timeUtils.GetTimestampString()
 	vipTime, err := strconv.ParseInt(user.VipTime, 10, 64)
 	if err != nil {
 		return user, err
@@ -188,6 +187,48 @@ func UserUpdate(userBean bean.UserBean) (bean.UserBean, error) {
 	}
 	_ = stmtIn.Close()
 	return UserSelectByAccount(user.Account)
+}
+func UserRecharge(user_id, pay_id string) error {
+	if len(user_id) == 0 {
+		return bean.NewErrorMessage("账号不能为空")
+	}
+	if len(pay_id) == 0 {
+		return bean.NewErrorMessage("充值类型不能为空")
+	}
+	userBean, err := UserSelectById(user_id)
+	if err != nil {
+		return err
+	}
+	priceBean, err := PriceSelectById(pay_id)
+	if err != nil {
+		return err
+	}
+	day, err := strconv.ParseInt(priceBean.Day, 10, 32)
+	if err != nil {
+		return err
+	}
+	givingDay, err := strconv.ParseInt(priceBean.GivingDay, 10, 32)
+	if err != nil {
+		return err
+	}
+	addTime := givingDay + day
+	uTime, _ := strconv.ParseInt(userBean.VipTime, 10, 64)
+	if uTime < timeUtils.GetTimestamp() {
+		uTime = timeUtils.GetTimestamp()
+	}
+	finallyTime := uTime + (addTime * 24 * 60 * 60)
+	stmtIn, err := dbConn.Prepare("UPDATE table_user SET pwd=?,user_name=?,head_portrait=?,vip_time=? WHERE account=?")
+	if err != nil {
+		return err
+	}
+
+	format := timeUtils.GetTimeFormat(finallyTime, timeUtils.DATE_TIME_FMT)
+	_, err = stmtIn.Exec(userBean.Pwd, userBean.UserName, userBean.HeadPortrait, format, userBean.Account)
+	if err != nil {
+		return err
+	}
+	_ = stmtIn.Close()
+	return nil
 }
 
 func UserSelectSecurityByAccount(account string) (bean.SecurityBean, error) {

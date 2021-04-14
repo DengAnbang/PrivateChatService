@@ -70,7 +70,7 @@ WHERE table_recharge.recharge_type = ? order by table_recharge.created desc`)
 func RechargeSelectByUserId(userId string) ([]bean.RechargeBean, error) {
 	beans := make([]bean.RechargeBean, 0)
 	if len(userId) == 0 {
-		return beans, bean.NewErrorMessage("充值的人的类型不能为空")
+		return beans, bean.NewErrorMessage("充值的人的id不能为空")
 	}
 	stmtOut, err := dbConn.Prepare(`SELECT *,
        tu1.user_name as user_name,
@@ -156,6 +156,38 @@ WHERE date_format(table_recharge.created,'%Y-%m-%d') between ? and ? order by ta
 
 	defer stmtOut.Close()
 	rows, err := stmtOut.Query(startTime, endTime)
+	if err != nil {
+		return beans, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		mapStrings, err := dbutils.GetRowsMap(rows)
+		if err != nil {
+			return beans, err
+		}
+		newUserBean := *bean.NewRechargeBean(mapStrings)
+		beans = append(beans, newUserBean)
+	}
+	return beans, nil
+}
+func RechargeSelectAll() ([]bean.RechargeBean, error) {
+	beans := make([]bean.RechargeBean, 0)
+
+	stmtOut, err := dbConn.Prepare(`SELECT *,
+       tu1.user_name as user_name,
+       tu1.account as user_account,
+       tu2.account as execution_user_account,
+       tu2.user_name as execution_user_name,
+       UNIX_TIMESTAMP(table_recharge.created) as created
+FROM table_recharge
+         LEFT OUTER JOIN table_user tu1 ON table_recharge.user_id = tu1.user_id
+         left outer join table_user tu2 ON table_recharge.execution_user_id = tu2.user_id
+ order by table_recharge.created desc`)
+	if err != nil {
+		return beans, err
+	}
+	defer stmtOut.Close()
+	rows, err := stmtOut.Query()
 	if err != nil {
 		return beans, err
 	}

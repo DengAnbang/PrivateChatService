@@ -69,6 +69,19 @@ func CreateRechargeTable(db *sql.DB) error {
 	return err
 }
 
+//充值的价格表
+func CreatePriceTable(db *sql.DB) error {
+	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS table_price (
+	    id INT(64) NOT NULL AUTO_INCREMENT COMMENT '数据id',
+	    money VARCHAR(64) NOT NULL  COMMENT '充值的金额',
+	    day VARCHAR(64) NOT NULL  COMMENT '充值天数',
+	    giving_day VARCHAR(64) NOT NULL  COMMENT '赠送天数',
+	    created TIMESTAMP NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
+	    PRIMARY KEY (id)
+	)AUTO_INCREMENT = 0`)
+	return err
+}
+
 func AddColumn(db *sql.DB, tableName, columnName string, defaultValue string, comment string) error {
 	result, err := db.Prepare(`SELECT count(*) FROM information_schema.columns WHERE table_name = ? AND column_name = ?`)
 	if err != nil {

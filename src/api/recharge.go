@@ -28,7 +28,7 @@ func RechargeSelectByTypeHttp(_ http.ResponseWriter, r *http.Request) error {
 	return bean.NewSucceedMessage(beans)
 }
 func RechargeSelectByUserIdHttp(_ http.ResponseWriter, r *http.Request) error {
-	userId := httpUtils.GetValueFormRequest(r, "userId")
+	userId := httpUtils.GetValueFormRequest(r, "user_id")
 	beans, err := dbops.RechargeSelectByUserId(userId)
 	if err != nil {
 		return err
@@ -47,6 +47,13 @@ func RechargeSelectByTimeHttp(_ http.ResponseWriter, r *http.Request) error {
 	startTime := httpUtils.GetValueFormRequest(r, "startTime")
 	endTime := httpUtils.GetValueFormRequest(r, "endTime")
 	beans, err := dbops.RechargeSelectByTime(startTime, endTime)
+	if err != nil {
+		return err
+	}
+	return bean.NewSucceedMessage(beans)
+}
+func RechargeSelectAllHttp(_ http.ResponseWriter, r *http.Request) error {
+	beans, err := dbops.RechargeSelectAll()
 	if err != nil {
 		return err
 	}
