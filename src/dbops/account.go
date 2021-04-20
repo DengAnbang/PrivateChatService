@@ -3,14 +3,12 @@ package dbops
 import (
 	"database/sql"
 	_ "database/sql"
-	"fmt"
 	"gitee.com/DengAnbang/PrivateChatService/src/bean"
 	"gitee.com/DengAnbang/PrivateChatService/src/socket/push"
 	"gitee.com/DengAnbang/goutils/dbutils"
 	"gitee.com/DengAnbang/goutils/loge"
 	"gitee.com/DengAnbang/goutils/timeUtils"
 	"gitee.com/DengAnbang/goutils/utils"
-	"math/rand"
 	"strconv"
 )
 
@@ -147,17 +145,18 @@ func UserSelectByFuzzySearchAll(word string) ([]bean.UserBean, error) {
 }
 func UserSelectById(user_id, my_user_id string) (bean.UserBean, error) {
 	var user bean.UserBean
-	stmtOut, err := dbConn.Prepare(`SELECT *  
-,UNIX_TIMESTAMP(table_user.vip_time) as vip_time
-,table_user.user_id as table_user_id
-FROM table_user 
-LEFT OUTER JOIN table_user_friend_comment ON table_user.user_id= table_user_friend_comment.to_user_id AND ?= table_user_friend_comment.user_id
+	stmtOut, err := dbConn.Prepare(`SELECT *
+     ,UNIX_TIMESTAMP(table_user.vip_time) as vip_time
+     ,table_user.user_id as table_user_id
+FROM table_user
+    LEFT OUTER JOIN table_user_friend_comment ON table_user.user_id= table_user_friend_comment.to_user_id AND ?= table_user_friend_comment.user_id
+    LEFT OUTER JOIN table_user_friend ON ((table_user.user_id=table_user_friend.user_id AND table_user_friend.to_user_id=?) OR (table_user.user_id=table_user_friend.to_user_id AND table_user_friend.user_id=?))
 WHERE table_user.user_id = ?`)
 	if err != nil {
 		return user, err
 	}
 	defer stmtOut.Close()
-	rows, err := stmtOut.Query(my_user_id, user_id)
+	rows, err := stmtOut.Query(my_user_id, my_user_id, my_user_id, user_id)
 	if err != nil {
 		return user, err
 	}
@@ -292,7 +291,7 @@ func UserSecurityUpdate(account, q1, a1, q2, a2 string) error {
 	return err
 }
 
-func UserAddFriend(user_id, to_user_id, friend_type string) error {
+func UserAddFriend(user_id, to_user_id, friend_type, chat_pwd string) error {
 	if len(user_id) == 0 || len(to_user_id) == 0 {
 		return bean.NewErrorMessage("好友不能为空")
 	}
@@ -306,15 +305,11 @@ func UserAddFriend(user_id, to_user_id, friend_type string) error {
 	if len(friend_type) == 0 {
 		friend_type = "0"
 	}
-	chat_pwd := 0
-	if friend_type == "2" {
-		chat_pwd = 1000 + rand.Intn(9999-1000)
-	}
 	stmtIn, err := dbConn.Prepare("REPLACE INTO table_user_friend (user_id,to_user_id,friend_type,chat_pwd)VALUES(?,?,?,?)")
 	if err != nil {
 		return err
 	}
-	_, err = stmtIn.Exec(user_id, to_user_id, friend_type, fmt.Sprint(chat_pwd))
+	_, err = stmtIn.Exec(user_id, to_user_id, friend_type, chat_pwd)
 	_ = stmtIn.Close()
 	if err != nil {
 		return err
