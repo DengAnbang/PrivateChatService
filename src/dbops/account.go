@@ -3,11 +3,14 @@ package dbops
 import (
 	"database/sql"
 	_ "database/sql"
+	"fmt"
 	"gitee.com/DengAnbang/PrivateChatService/src/bean"
+	"gitee.com/DengAnbang/PrivateChatService/src/socket/push"
 	"gitee.com/DengAnbang/goutils/dbutils"
 	"gitee.com/DengAnbang/goutils/loge"
 	"gitee.com/DengAnbang/goutils/timeUtils"
 	"gitee.com/DengAnbang/goutils/utils"
+	"math/rand"
 	"strconv"
 )
 
@@ -103,7 +106,10 @@ func UserSelectByFuzzySearch(word string) ([]bean.UserBean, error) {
 		if err != nil {
 			return userBeans, err
 		}
-		userBeans = append(userBeans, *bean.NewUserBean(mapStrings))
+		i := *bean.NewUserBean(mapStrings)
+		i.Online = push.CheckOnline(i.UserId)
+		userBeans = append(userBeans, i)
+
 	}
 	return userBeans, err
 }
@@ -131,20 +137,27 @@ func UserSelectByFuzzySearchAll(word string) ([]bean.UserBean, error) {
 			if err != nil {
 				return userBeans, err
 			}
-			userBeans = append(userBeans, *bean.NewUserBean(mapStrings))
+			i := *bean.NewUserBean(mapStrings)
+			i.Online = push.CheckOnline(i.UserId)
+			userBeans = append(userBeans, i)
 		}
 	}
 
 	return userBeans, err
 }
-func UserSelectById(user_id string) (bean.UserBean, error) {
+func UserSelectById(user_id, my_user_id string) (bean.UserBean, error) {
 	var user bean.UserBean
-	stmtOut, err := dbConn.Prepare("SELECT *  ,UNIX_TIMESTAMP(table_user.vip_time) as vip_time FROM table_user WHERE user_id = ?")
+	stmtOut, err := dbConn.Prepare(`SELECT *  
+,UNIX_TIMESTAMP(table_user.vip_time) as vip_time
+,table_user.user_id as table_user_id
+FROM table_user 
+LEFT OUTER JOIN table_user_friend_comment ON table_user.user_id= table_user_friend_comment.to_user_id AND ?= table_user_friend_comment.user_id
+WHERE table_user.user_id = ?`)
 	if err != nil {
 		return user, err
 	}
 	defer stmtOut.Close()
-	rows, err := stmtOut.Query(user_id)
+	rows, err := stmtOut.Query(my_user_id, user_id)
 	if err != nil {
 		return user, err
 	}
@@ -155,6 +168,11 @@ func UserSelectById(user_id string) (bean.UserBean, error) {
 			return user, err
 		}
 		user = *bean.NewUserBean(mapStrings)
+		user.UserId = user_id
+		if len(mapStrings["table_user_id"]) != 0 {
+			user.UserId = mapStrings["table_user_id"]
+		}
+		user.Online = push.CheckOnline(user.UserId)
 	}
 	return user, err
 }
@@ -195,7 +213,7 @@ func UserRecharge(user_id, pay_id string) error {
 	if len(pay_id) == 0 {
 		return bean.NewErrorMessage("充值类型不能为空")
 	}
-	userBean, err := UserSelectById(user_id)
+	userBean, err := UserSelectById(user_id, user_id)
 	if err != nil {
 		return err
 	}
@@ -274,42 +292,6 @@ func UserSecurityUpdate(account, q1, a1, q2, a2 string) error {
 	return err
 }
 
-//func UserAddFriend(user_id, to_user_id, friend_type string) error {
-//	if len(user_id) == 0 || len(to_user_id) == 0 {
-//		return bean.NewErrorMessage("好友不能为空")
-//	}
-//	s, err := UserSelectFriendType(user_id, to_user_id)
-//	if s == "1" {
-//		return bean.NewErrorMessage("已经是好友关系了")
-//	} else if len(s) == 0 {
-//		if len(friend_type) == 0 {
-//			friend_type = "0"
-//		} else if friend_type == "1" { //1表示直接添加好友
-//			stmtIn, err := dbConn.Prepare("REPLACE INTO table_user_friend (user_id,to_user_id,friend_type)VALUES(?,?,?)")
-//			if err != nil {
-//				return err
-//			}
-//			_, err = stmtIn.Exec(to_user_id, user_id, friend_type)
-//			_ = stmtIn.Close()
-//			if err != nil {
-//				return err
-//			}
-//		}
-//		stmtIn, err := dbConn.Prepare("INSERT INTO table_user_friend (user_id,to_user_id,friend_type)VALUES(?,?,?)")
-//		if err != nil {
-//			return err
-//		}
-//		_, err = stmtIn.Exec(user_id, to_user_id, friend_type)
-//		_ = stmtIn.Close()
-//		if err != nil {
-//			return err
-//		}
-//	} else {
-//		return bean.NewErrorMessage("对方不允许你添加为好友")
-//	}
-//
-//	return err
-//}
 func UserAddFriend(user_id, to_user_id, friend_type string) error {
 	if len(user_id) == 0 || len(to_user_id) == 0 {
 		return bean.NewErrorMessage("好友不能为空")
@@ -324,11 +306,35 @@ func UserAddFriend(user_id, to_user_id, friend_type string) error {
 	if len(friend_type) == 0 {
 		friend_type = "0"
 	}
-	stmtIn, err := dbConn.Prepare("REPLACE INTO table_user_friend (user_id,to_user_id,friend_type)VALUES(?,?,?)")
+	chat_pwd := 0
+	if friend_type == "2" {
+		chat_pwd = 1000 + rand.Intn(9999-1000)
+	}
+	stmtIn, err := dbConn.Prepare("REPLACE INTO table_user_friend (user_id,to_user_id,friend_type,chat_pwd)VALUES(?,?,?,?)")
 	if err != nil {
 		return err
 	}
-	_, err = stmtIn.Exec(user_id, to_user_id, friend_type)
+	_, err = stmtIn.Exec(user_id, to_user_id, friend_type, fmt.Sprint(chat_pwd))
+	_ = stmtIn.Close()
+	if err != nil {
+		return err
+	}
+	_ = stmtIn.Close()
+	return err
+}
+func UserFriendCommentSet(user_id, to_user_id, nickname string) error {
+	if len(user_id) == 0 || len(to_user_id) == 0 {
+		return bean.NewErrorMessage("好友不能为空")
+	}
+	if user_id == to_user_id {
+		return bean.NewErrorMessage("设置自己的备注")
+	}
+
+	stmtIn, err := dbConn.Prepare("REPLACE INTO table_user_friend_comment (user_id,to_user_id,nickname)VALUES(?,?,?)")
+	if err != nil {
+		return err
+	}
+	_, err = stmtIn.Exec(user_id, to_user_id, nickname)
 	_ = stmtIn.Close()
 	if err != nil {
 		return err
@@ -369,18 +375,32 @@ func UserSelectFriend(user_id, friend_type string) ([]bean.UserBean, error) {
 	}
 	var stmtOut *sql.Stmt
 	if friend_type == "1" {
-		stmtOut, err = dbConn.Prepare("SELECT *  ,UNIX_TIMESTAMP(table_user.vip_time) as vip_time FROM table_user_friend LEFT OUTER JOIN table_user ON (if(table_user_friend.to_user_id = ?, table_user_friend.user_id,table_user_friend.to_user_id)) = table_user.user_id WHERE (table_user_friend.user_id = ? OR to_user_id = ?) AND friend_type = ?")
+		stmtOut, err = dbConn.Prepare(`SELECT *  , 
+ table_user.user_id as table_user_id,
+UNIX_TIMESTAMP(table_user.vip_time) as vip_time,
+table_user_friend.user_id as table_user_friend_user_id,
+       table_user_friend_comment.user_id as table_user_friend_comment_user_id
+FROM table_user_friend
+    LEFT OUTER JOIN table_user ON (if(table_user_friend.to_user_id = ?, table_user_friend.user_id,table_user_friend.to_user_id)) = table_user.user_id
+    LEFT OUTER JOIN table_user_friend_comment ON (if(table_user_friend.to_user_id = ?, table_user_friend.user_id,table_user_friend.to_user_id)) = table_user_friend_comment.to_user_id AND table_user_friend_comment.user_id=?
+WHERE (table_user_friend.user_id = ? OR table_user_friend.to_user_id = ?) AND friend_type = ?`)
 	}
 	if friend_type == "2" {
-		stmtOut, err = dbConn.Prepare("SELECT *  ,UNIX_TIMESTAMP(table_user.vip_time) as vip_time FROM table_user_friend LEFT OUTER JOIN table_user ON (if(table_user_friend.to_user_id = ?, table_user_friend.user_id,table_user_friend.to_user_id)) = table_user.user_id WHERE (to_user_id = ? AND  to_user_id = ?) AND friend_type = ?")
+		stmtOut, err = dbConn.Prepare(`SELECT *  , 
+ table_user.user_id as table_user_id,
+UNIX_TIMESTAMP(table_user.vip_time) as vip_time,
+table_user_friend.user_id as table_user_friend_user_id,
+       table_user_friend_comment.user_id as table_user_friend_comment_user_id
+FROM table_user_friend
+    LEFT OUTER JOIN table_user ON (if(table_user_friend.to_user_id = ?, table_user_friend.user_id,table_user_friend.to_user_id)) = table_user.user_id
+    LEFT OUTER JOIN table_user_friend_comment ON (if(table_user_friend.to_user_id = ?, table_user_friend.user_id,table_user_friend.to_user_id)) = table_user_friend_comment.to_user_id AND table_user_friend_comment.user_id=?
+WHERE (table_user_friend.to_user_id = ? OR table_user_friend.to_user_id = ?) AND friend_type = ?`)
 	}
-	//stmtOut, err := dbConn.Prepare("SELECT * FROM table_user_friend LEFT OUTER JOIN table_user ON table_user_friend.to_user_id=table_user.user_id WHERE table_user_friend.user_id = ? AND table_user_friend.friend_type = ?")
-	//stmtOut, err := dbConn.Prepare("SELECT * FROM table_user_friend LEFT OUTER JOIN table_user ON (if(table_user_friend.to_user_id = ?, table_user_friend.user_id,table_user_friend.to_user_id)) = table_user.user_id WHERE table_user_friend.user_id = ? OR to_user_id = ? AND friend_type = ?")
 	if err != nil {
 		return userBeans, err
 	}
 	defer stmtOut.Close()
-	rows, err := stmtOut.Query(user_id, user_id, user_id, friend_type)
+	rows, err := stmtOut.Query(user_id, user_id, user_id, user_id, user_id, friend_type)
 	if err != nil {
 		return userBeans, err
 	}
@@ -391,6 +411,8 @@ func UserSelectFriend(user_id, friend_type string) ([]bean.UserBean, error) {
 			return userBeans, err
 		}
 		newUserBean := *bean.NewUserBean(mapStrings)
+		newUserBean.UserId = mapStrings["table_user_id"]
+		newUserBean.Online = push.CheckOnline(newUserBean.UserId)
 		userBeans = append(userBeans, newUserBean)
 	}
 

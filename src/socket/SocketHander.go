@@ -61,6 +61,11 @@ func GetString(parameters map[string]string, key string) string {
 	return parameters[key]
 
 }
+func init() {
+	push.UserSelectFriendCall = func(user_id, friend_type string) (beans []bean.UserBean, e error) {
+		return dbops.UserSelectFriend(user_id, friend_type)
+	}
+}
 
 //func GetString(parameters map[string]interface{}, key string) string {
 //	i := parameters[key]

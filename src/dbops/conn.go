@@ -84,6 +84,9 @@ func createTable(db *sql.DB) error {
 	if err = CreateUserFriendTable(db); err != nil {
 		return err
 	}
+	if err = CreateUserFriendCommentTable(db); err != nil {
+		return err
+	}
 	if err = CreateFriendListTable(db); err != nil {
 		return err
 	}

@@ -7,11 +7,13 @@ import (
 
 type UserBean struct {
 	UserName     string `json:"user_name"`
+	Nickname     string `json:"nickname"`
 	UserId       string `json:"user_id"`
 	Account      string `json:"account"`
 	HeadPortrait string `json:"head_portrait"`
 	VipTime      string `json:"vip_time"`
 	Permissions  string `json:"permissions"`
+	Online       bool   `json:"online"`
 	Pwd          string `json:"-"`
 }
 
@@ -19,6 +21,7 @@ func NewUserBean(data map[string]string) *UserBean {
 	return &UserBean{
 		Account:      data["account"],
 		UserName:     data["user_name"],
+		Nickname:     data["nickname"],
 		UserId:       data["user_id"],
 		VipTime:      data["vip_time"],
 		HeadPortrait: data["head_portrait"],

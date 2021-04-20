@@ -12,4 +12,5 @@ const (
 	TYPE_MSG_RECEIVE    = "20002" //接收消息
 	TYPE_MSG_GROUP_SEND = "20003" //发送群消息
 	TYPE_FRIEND_ADD     = "21001" //有好友申请的推送
+	TYPE_FRIEND_CHANGE  = "21002" //有好友变化的推送(包括在线离线)
 )

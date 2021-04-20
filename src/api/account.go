@@ -168,8 +168,9 @@ func UserSelectByAccountHttp(_ http.ResponseWriter, r *http.Request) error {
 	return bean.NewSucceedMessage(userBean)
 }
 func UserSelectByIdHttp(_ http.ResponseWriter, r *http.Request) error {
-	account := httpUtils.GetValueFormRequest(r, "user_id")
-	userBean, err := dbops.UserSelectById(account)
+	user_id := httpUtils.GetValueFormRequest(r, "user_id")
+	my_user_id := httpUtils.GetValueFormRequest(r, "my_user_id")
+	userBean, err := dbops.UserSelectById(user_id, my_user_id)
 	if err != nil {
 		return err
 	}
@@ -180,7 +181,8 @@ func UserFriendAddHttp(_ http.ResponseWriter, r *http.Request) error {
 	user_id := httpUtils.GetValueFormRequest(r, "user_id")
 	to_user_id := httpUtils.GetValueFormRequest(r, "to_user_id")
 	friend_type := httpUtils.GetValueFormRequest(r, "friend_type")
-	err := dbops.UserAddFriend(user_id, to_user_id, friend_type)
+	err := dbops.UserRemoveFriend(user_id, to_user_id)
+	err = dbops.UserAddFriend(user_id, to_user_id, friend_type)
 	if err != nil {
 		return err
 	}
@@ -196,7 +198,30 @@ func UserFriendAddHttp(_ http.ResponseWriter, r *http.Request) error {
 		}
 		push.PushSocket(&data)
 	}
+	//通过对方好友,提醒对方更新好友列表
+	if friend_type == "1" {
+		data := bean.SocketData{
+			TargetId: to_user_id,
+			SenderId: user_id,
+			Type:     socketConst.TYPE_FRIEND_CHANGE,
+			Msg:      "",
+			DebugMsg: "",
+			Data:     "",
+		}
+		push.PushSocket(&data)
+	}
 
+	return bean.NewSucceedMessage("申请成功!")
+}
+func UserFriendCommentSetHttp(_ http.ResponseWriter, r *http.Request) error {
+	user_id := httpUtils.GetValueFormRequest(r, "user_id")
+	to_user_id := httpUtils.GetValueFormRequest(r, "to_user_id")
+	nickname := httpUtils.GetValueFormRequest(r, "nickname")
+
+	err := dbops.UserFriendCommentSet(user_id, to_user_id, nickname)
+	if err != nil {
+		return err
+	}
 	return bean.NewSucceedMessage("申请成功!")
 }
 func UserFriendDeleteHttp(_ http.ResponseWriter, r *http.Request) error {
@@ -206,6 +231,17 @@ func UserFriendDeleteHttp(_ http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
+	//通过对方,提醒对方更新好友列表
+	data := bean.SocketData{
+		TargetId: to_user_id,
+		SenderId: user_id,
+		Type:     socketConst.TYPE_FRIEND_CHANGE,
+		Msg:      "",
+		DebugMsg: "",
+		Data:     "",
+	}
+	push.PushSocket(&data)
+
 	return bean.NewSucceedMessage("删除成功!")
 }
 

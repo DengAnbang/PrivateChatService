@@ -39,6 +39,21 @@ func CreateUserFriendTable(db *sql.DB) error {
 	)AUTO_INCREMENT = 0`)
 	return err
 }
+
+//
+func CreateUserFriendCommentTable(db *sql.DB) error {
+	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS table_user_friend_comment (
+	    id INT(64) NOT NULL AUTO_INCREMENT COMMENT '数据id',
+	    user_id VARCHAR(64) NOT NULL  COMMENT '用户id',
+	    to_user_id VARCHAR(64) NOT NULL  COMMENT '好友id',
+	    nickname VARCHAR(64) NOT NULL  COMMENT '昵称',
+	    created TIMESTAMP NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
+	    PRIMARY KEY (id),UNIQUE KEY (user_id,to_user_id)
+	)AUTO_INCREMENT = 0`)
+	return err
+}
+
+//群的表
 func CreateFriendListTable(db *sql.DB) error {
 	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS table_friend_group (
 	    id INT(64) NOT NULL AUTO_INCREMENT COMMENT '数据id',

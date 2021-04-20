@@ -15,12 +15,12 @@ type ResultData struct {
 	Data         interface{} `json:"data"`
 }
 type SocketData struct {
-	TargetId string `json:"targetId"`
-	SenderId string `json:"senderId"`
-	Type     string `json:"type"`
-	Msg      string `json:"msg"`
-	DebugMsg string `json:"debug_msg"`
-	Data     string `json:"data"`
+	TargetId string      `json:"targetId"`
+	SenderId string      `json:"senderId"`
+	Type     string      `json:"type"`
+	Msg      string      `json:"msg"`
+	DebugMsg string      `json:"debug_msg"`
+	Data     interface{} `json:"data"`
 }
 
 func (r *ResultData) Error() string {

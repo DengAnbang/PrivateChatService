@@ -2,6 +2,7 @@ package push
 
 import (
 	"gitee.com/DengAnbang/PrivateChatService/src/bean"
+	"gitee.com/DengAnbang/PrivateChatService/src/socket/socketConst"
 	"gitee.com/DengAnbang/goutils/loge"
 	"sync"
 )
@@ -40,22 +41,50 @@ type ResponseAble interface {
 }
 
 func Register(key string, wc ResponseAble) (last ResponseAble) {
-	SocketManage.Lock.Lock()
-	defer SocketManage.Lock.Unlock()
+	//SocketManage.Lock.Lock()
+	//defer SocketManage.Lock.Unlock()
 	if conn, ok := SocketManage.Conns[key]; ok {
 		last = conn
 		delete(SocketManage.Conns, key)
 	}
 	SocketManage.Conns[key] = wc
+	NotificationOnline(wc.GetId(), true)
 	wc.SetId(key)
 	return
 }
+func CheckOnline(key string) (online bool) {
+	if _, ok := SocketManage.Conns[key]; ok {
+		return true
+	}
+	return false
+}
 func UnRegister(wc ResponseAble) (last ResponseAble) {
-	SocketManage.Lock.Lock()
-	defer SocketManage.Lock.Unlock()
+	//SocketManage.Lock.Lock()
+	//defer SocketManage.Lock.Unlock()
 	delete(SocketManage.Conns, wc.GetId())
+	NotificationOnline(wc.GetId(), false)
 	last = wc
 	return
+}
+
+type UserSelectFriendCallback func(user_id, friend_type string) ([]bean.UserBean, error)
+
+var UserSelectFriendCall UserSelectFriendCallback
+
+func NotificationOnline(user_id string, online bool) {
+	beans, _ := UserSelectFriendCall(user_id, "1")
+	for _, value := range beans {
+		data := bean.SocketData{
+			TargetId: value.UserId,
+			SenderId: user_id,
+			Type:     socketConst.TYPE_FRIEND_CHANGE,
+			Msg:      "",
+			DebugMsg: "",
+			Data:     online,
+		}
+		PushSocketByTargetId(&data, value.UserId)
+	}
+
 }
 func Push(userId string, pushType string, msg string) {
 	succeedMessage := bean.NewSucceedMessage(msg)
