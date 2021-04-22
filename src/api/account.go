@@ -218,6 +218,17 @@ func UserFriendAddHttp(_ http.ResponseWriter, r *http.Request) error {
 		}
 		push.PushSocket(&data)
 	}
+	if friend_type == "1" {
+		data := bean.SocketData{
+			TargetId: user_id,
+			SenderId: to_user_id,
+			Type:     socketConst.TYPE_FRIEND_CHANGE,
+			Msg:      "",
+			DebugMsg: "",
+			Data:     "",
+		}
+		push.PushSocket(&data)
+	}
 
 	return bean.NewSucceedMessage("添加成功!")
 }
