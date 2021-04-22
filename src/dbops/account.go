@@ -212,6 +212,17 @@ func UserRecharge(user_id, pay_id string) error {
 	if len(pay_id) == 0 {
 		return bean.NewErrorMessage("充值类型不能为空")
 	}
+	if pay_id == "1" { //如果是首次充值,验证账号是否是首次充值
+		securityBean, err := UserSelectSecurityByAccount(user_id)
+		if err != nil {
+			return err
+		}
+		//如果已经首次充值了
+		if securityBean.RechargeType == "1" {
+			return bean.NewErrorMessage("此充值类型,仅限首次充值账号充值!")
+		}
+	}
+
 	userBean, err := UserSelectById(user_id, user_id)
 	if err != nil {
 		return err
@@ -245,17 +256,20 @@ func UserRecharge(user_id, pay_id string) error {
 		return err
 	}
 	_ = stmtIn.Close()
-	return nil
+	if pay_id == "1" {
+		err = UserFirstRechargeUpdate(user_id, "1")
+	}
+	return err
 }
 
-func UserSelectSecurityByAccount(account string) (bean.SecurityBean, error) {
+func UserSelectSecurityByAccount(user_id string) (bean.SecurityBean, error) {
 	var user bean.SecurityBean
-	stmtOut, err := dbConn.Prepare("SELECT question1,answer1,question2,answer2 FROM table_user WHERE account = ?")
+	stmtOut, err := dbConn.Prepare("SELECT * FROM table_user_extension WHERE user_id = ?")
 	if err != nil {
 		return user, err
 	}
 	defer stmtOut.Close()
-	rows, err := stmtOut.Query(account)
+	rows, err := stmtOut.Query(user_id)
 	if err != nil {
 		return user, err
 	}
@@ -270,27 +284,51 @@ func UserSelectSecurityByAccount(account string) (bean.SecurityBean, error) {
 	return user, err
 }
 
-func UserSecurityUpdate(account, q1, a1, q2, a2 string) error {
+func UserSecurityUpdate(user_id, q1, a1, q2, a2 string) error {
 	if len(q1) == 0 || len(a1) == 0 || len(q2) == 0 || len(a2) == 0 {
 		return bean.NewErrorMessage("账号不能为空")
 		//return user, httpUtils.NewResultError(code.NormalErr, "账号不能为空")
 	}
-	user, err := UserSelectByAccount(account)
+	user, err := UserSelectById(user_id, user_id)
 	if err != nil {
 		return err
 	}
 	if len(user.UserId) < 0 {
 		return bean.NewErrorMessage("用户不存在!")
 	}
-	stmtIn, err := dbConn.Prepare("UPDATE table_user SET question1=?,answer1=?,question2=?,answer2=? WHERE account=?")
+	//INSERT INTO table_user (user_id,account,pwd,user_name,head_portrait,vip_time)VALUES(?,?,?,?,?,?)
+	stmtIn, err := dbConn.Prepare(`REPLACE INTO table_user_extension(question1,answer1,question2,answer2,user_id)VALUES(?,?,?,?,?)`)
+	//stmtIn, err := dbConn.Prepare("UPDATE table_user_extension SET question1=?,answer1=?,question2=?,answer2=? WHERE user_id=?")
 	if err != nil {
 		return err
 	}
-	_, err = stmtIn.Exec(q1, a1, q2, a2, account)
+	_, err = stmtIn.Exec(q1, a1, q2, a2, user_id)
 	_ = stmtIn.Close()
 	return err
 }
-
+func UserFirstRechargeUpdate(user_id, recharge_type string) error {
+	if len(user_id) == 0 {
+		return bean.NewErrorMessage("用户id不能为空!")
+	}
+	if len(recharge_type) == 0 {
+		return bean.NewErrorMessage("recharge_type不能为空!")
+	}
+	user, err := UserSelectById(user_id, user_id)
+	if err != nil {
+		return err
+	}
+	if len(user.UserId) < 0 {
+		return bean.NewErrorMessage("用户不存在!")
+	}
+	stmtIn, err := dbConn.Prepare(`REPLACE INTO table_user_extension(recharge_type,user_id)VALUES(?,?)`)
+	//stmtIn, err := dbConn.Prepare("UPDATE table_user_extension SET recharge_type=? WHERE user_id=?")
+	if err != nil {
+		return err
+	}
+	_, err = stmtIn.Exec(recharge_type, user_id)
+	_ = stmtIn.Close()
+	return err
+}
 func UserAddFriend(user_id, to_user_id, friend_type, chat_pwd string) error {
 	if len(user_id) == 0 || len(to_user_id) == 0 {
 		return bean.NewErrorMessage("好友不能为空")

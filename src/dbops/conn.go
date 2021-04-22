@@ -81,6 +81,9 @@ func createTable(db *sql.DB) error {
 	if err = CreateUserTable(db); err != nil {
 		return err
 	}
+	if err = CreateUserExtensionTable(db); err != nil {
+		return err
+	}
 	if err = CreateUserFriendTable(db); err != nil {
 		return err
 	}

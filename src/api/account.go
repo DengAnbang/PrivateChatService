@@ -142,20 +142,20 @@ func UserRechargeHttp(_ http.ResponseWriter, r *http.Request) error {
 
 //安全问题接口
 func UserSecurityUpdateHttp(_ http.ResponseWriter, r *http.Request) error {
-	account := httpUtils.GetValueFormRequest(r, "account")
+	user_id := httpUtils.GetValueFormRequest(r, "user_id")
 	q1 := httpUtils.GetValueFormRequest(r, "q1")
 	a1 := httpUtils.GetValueFormRequest(r, "a1")
 	q2 := httpUtils.GetValueFormRequest(r, "q2")
 	a2 := httpUtils.GetValueFormRequest(r, "a2")
-	err := dbops.UserSecurityUpdate(account, q1, a1, q2, a2)
+	err := dbops.UserSecurityUpdate(user_id, q1, a1, q2, a2)
 	if err != nil {
 		return err
 	}
 	return bean.NewSucceedMessage("修改成功")
 }
 func UserSelectSecurityByAccountHttp(_ http.ResponseWriter, r *http.Request) error {
-	account := httpUtils.GetValueFormRequest(r, "account")
-	securityBean, err := dbops.UserSelectSecurityByAccount(account)
+	user_id := httpUtils.GetValueFormRequest(r, "user_id")
+	securityBean, err := dbops.UserSelectSecurityByAccount(user_id)
 	if err != nil {
 		return err
 	}

@@ -18,11 +18,22 @@ func CreateUserTable(db *sql.DB) error {
 	    created TIMESTAMP NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
 	    PRIMARY KEY (id)
 	)AUTO_INCREMENT = 0`)
-	_ = AddColumn(db, "table_user", "question1", "", "问题1")
-	_ = AddColumn(db, "table_user", "answer1", "", "答案1")
-	_ = AddColumn(db, "table_user", "question2", "", "问题2")
-	_ = AddColumn(db, "table_user", "answer2", "", "答案2")
 	_ = AddColumn(db, "table_user", "permissions", "0", "权限代码,0:默认,1:超级管理员")
+	return err
+}
+
+//创建用户扩展表
+func CreateUserExtensionTable(db *sql.DB) error {
+	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS table_user_extension (
+	    user_id VARCHAR(64) NOT NULL  COMMENT '用户id',
+	    question1 VARCHAR(64) NULL DEFAULT ''  COMMENT '问题1',
+	    answer1 VARCHAR(64) NULL DEFAULT ''  COMMENT '答案1',
+	    question2 VARCHAR(64) NULL DEFAULT ''  COMMENT '问题2',
+	    answer2 VARCHAR(64) NULL DEFAULT ''  COMMENT '答案2',
+	    recharge_type VARCHAR(64) NULL DEFAULT '0'  COMMENT '充值type,0表示默认,1表示首次充值',
+	    created TIMESTAMP NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
+	    PRIMARY KEY (user_id)
+	)AUTO_INCREMENT = 0`)
 	return err
 }
 

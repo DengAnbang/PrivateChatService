@@ -45,7 +45,8 @@ func PriceSelectByIdHttp(_ http.ResponseWriter, r *http.Request) error {
 	return bean.NewSucceedMessage(priceBean)
 }
 func PriceSelectAllHttp(_ http.ResponseWriter, r *http.Request) error {
-	beans, err := dbops.PriceSelectAll()
+	user_id := httpUtils.GetValueFormRequest(r, "user_id")
+	beans, err := dbops.PriceSelectAll(user_id)
 	if err != nil {
 		return err
 	}

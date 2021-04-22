@@ -30,6 +30,9 @@ func PriceDelete(id string) error {
 	if len(id) == 0 {
 		return bean.NewErrorMessage("id不能为空")
 	}
+	if id == "1" {
+		return bean.NewErrorMessage("预设的充值不能删除,只能修改")
+	}
 	price, err := PriceSelectById(id)
 	if err != nil {
 		return err
@@ -51,6 +54,9 @@ func PriceDelete(id string) error {
 func PriceUpdate(money, day, giving_day, id string) error {
 	if len(id) == 0 {
 		return bean.NewErrorMessage("id不能为空")
+	}
+	if id == "1" {
+		giving_day = "0"
 	}
 	price, err := PriceSelectById(id)
 	if err != nil {
@@ -91,8 +97,17 @@ func PriceSelectById(id string) (bean.PriceBean, error) {
 	}
 	return priceBean, err
 }
-func PriceSelectAll() ([]bean.PriceBean, error) {
+func PriceSelectAll(user_id string) ([]bean.PriceBean, error) {
 	beans := make([]bean.PriceBean, 0)
+	securityBean, err := UserSelectSecurityByAccount(user_id)
+	if err != nil {
+		return beans, err
+	}
+	firstRecharge := securityBean.RechargeType != "1"
+	userBean, err := UserSelectById(user_id, user_id)
+	if err != nil {
+		return beans, err
+	}
 
 	stmtOut, err := dbConn.Prepare(`SELECT * FROM table_price`)
 	if err != nil {
@@ -110,7 +125,14 @@ func PriceSelectAll() ([]bean.PriceBean, error) {
 			return beans, err
 		}
 		newUserBean := *bean.NewPriceBean(mapStrings)
-		beans = append(beans, newUserBean)
+		if newUserBean.Id == "1" {
+			if userBean.Permissions == "1" || firstRecharge {
+				beans = append(beans, newUserBean)
+			}
+		} else {
+			beans = append(beans, newUserBean)
+		}
+
 	}
 	return beans, nil
 }

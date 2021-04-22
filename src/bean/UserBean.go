@@ -58,17 +58,19 @@ func (u *UserBean) Modify(new UserBean) {
 }
 
 type SecurityBean struct {
-	Question1 string `json:"question1"`
-	Answer1   string `json:"answer1"`
-	Question2 string `json:"question2"`
-	Answer2   string `json:"answer2"`
+	Question1    string `json:"question1"`
+	Answer1      string `json:"answer1"`
+	Question2    string `json:"question2"`
+	Answer2      string `json:"answer2"`
+	RechargeType string `json:"recharge_type"`
 }
 
 func NewSecurityBean(data map[string]string) *SecurityBean {
 	return &SecurityBean{
-		Question1: data["question1"],
-		Answer1:   data["answer1"],
-		Question2: data["question2"],
-		Answer2:   data["answer2"],
+		Question1:    data["question1"],
+		Answer1:      data["answer1"],
+		Question2:    data["question2"],
+		Answer2:      data["answer2"],
+		RechargeType: data["recharge_type"],
 	}
 }

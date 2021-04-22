@@ -172,7 +172,6 @@ WHERE date_format(table_recharge.created,'%Y-%m-%d') between ? and ? order by ta
 }
 func RechargeSelectAll() ([]bean.RechargeBean, error) {
 	beans := make([]bean.RechargeBean, 0)
-
 	stmtOut, err := dbConn.Prepare(`SELECT *,
        tu1.user_name as user_name,
        tu1.account as user_account,
