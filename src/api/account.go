@@ -133,7 +133,9 @@ func UserUpdateHttp(_ http.ResponseWriter, r *http.Request) error {
 func UserRechargeHttp(_ http.ResponseWriter, r *http.Request) error {
 	user_id := httpUtils.GetValueFormRequest(r, "user_id")
 	pay_id := httpUtils.GetValueFormRequest(r, "pay_id")
-	err := dbops.UserRecharge(user_id, pay_id)
+	execution_user_id := httpUtils.GetValueFormRequest(r, "execution_user_id")
+	recharge_type := httpUtils.GetValueFormRequest(r, "recharge_type")
+	err := dbops.UserRecharge(user_id, pay_id, execution_user_id, recharge_type)
 	if err != nil {
 		return err
 	}

@@ -88,7 +88,7 @@ func CreateRechargeTable(db *sql.DB) error {
 	    execution_user_id VARCHAR(64) NOT NULL  COMMENT '执行的人的id',
 	    money VARCHAR(64) NOT NULL  COMMENT '充值的金额',
 	    day VARCHAR(64) NOT NULL  COMMENT '充值天数',
-	    recharge_type VARCHAR(64) NOT NULL  COMMENT '充值类型(0:管理员,1:支付宝)',
+	    recharge_type VARCHAR(64) NOT NULL  COMMENT '充值类型(zfb,gly,wx)',
 	    created TIMESTAMP NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
 	    PRIMARY KEY (id)
 	)AUTO_INCREMENT = 0`)

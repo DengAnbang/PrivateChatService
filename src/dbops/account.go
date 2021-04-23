@@ -3,6 +3,7 @@ package dbops
 import (
 	"database/sql"
 	_ "database/sql"
+	"fmt"
 	"gitee.com/DengAnbang/PrivateChatService/src/bean"
 	"gitee.com/DengAnbang/PrivateChatService/src/socket/push"
 	"gitee.com/DengAnbang/goutils/dbutils"
@@ -205,7 +206,7 @@ func UserUpdate(userBean bean.UserBean) (bean.UserBean, error) {
 	_ = stmtIn.Close()
 	return UserSelectByAccount(user.Account)
 }
-func UserRecharge(user_id, pay_id string) error {
+func UserRecharge(user_id, pay_id, execution_user_id, recharge_type string) error {
 	if len(user_id) == 0 {
 		return bean.NewErrorMessage("账号不能为空")
 	}
@@ -259,6 +260,8 @@ func UserRecharge(user_id, pay_id string) error {
 	if pay_id == "1" {
 		err = UserFirstRechargeUpdate(user_id, "1")
 	}
+	err = RechargeAdd(user_id, execution_user_id, priceBean.Money, fmt.Sprint(addTime), recharge_type)
+
 	return err
 }
 
