@@ -15,4 +15,6 @@ var (
 	ConfigRootPath   = RootPath + "config/"
 	FileAppPath      = FileRootPath + "app/"
 	FileAppPathName  = FileAppPath + "/app.apk"
+	FileHTTPSPathCrt = RootPath + "/hezeyisoftware.com.crt"
+	FileHTTPSPathKey = RootPath + "/hezeyisoftware.com.key"
 )
