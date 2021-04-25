@@ -20,10 +20,12 @@ var (
 	PublicDatabaseBackups = "/public/database/backups"
 	PublicDatabaseRestore = "/public/database/restore"
 	PublicFileUpload      = "/public/file/upload"
-	PublicFileDelete      = "/public/file/delete"
-	PublicFileUploadChat  = "/public/file/upload/chat"
-	PublicUpdatesUpload   = "/public/app/updates/upload"
-	PublicUpdatesCheck    = "/public/app/updates/check"
+
+	PublicFileDelete     = "/public/file/delete"
+	PublicFileUploadChat = "/public/file/upload/chat"
+	PublicUpdatesCheck   = "/public/app/updates/check"
+	PublicAppUpdate      = "/public/app/updates/upload"
+	PublicAppDownload    = "/public/app/updates/download"
 	//用户相关
 	UserRegister               = "/app/user/register"
 	UserLogin                  = "/app/user/login"
@@ -65,10 +67,11 @@ func Run(port string, mux *http.ServeMux) {
 	//Apis["/"] = test
 
 	//公共部分
+	Apis[PublicAppUpdate] = PublicAppUpdateHttp
+	Apis[PublicAppDownload] = PublicAppDownloadHttp
 	Apis[PublicFileUpload] = PublicFileUploadHttp
 	Apis[PublicFileDelete] = PublicFileDeleteHttp
 	Apis[PublicFileUploadChat] = PublicFileUploadChatHttp
-	Apis[PublicUpdatesUpload] = PublicUpdatesUploadHttp
 	Apis[PublicUpdatesCheck] = PublicUpdatesCheckHttp
 	//Apis[PublicDatabaseBackups] = DatabaseBackupsHttp
 	//Apis[PublicDatabaseRestore] = DatabaseRestoreHttp

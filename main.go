@@ -10,10 +10,20 @@ import (
 )
 
 //http://47.108.172.20:9090/upload
+//http://192.168.31.213:9090/public/app/update
+//http://192.168.31.213:9090/public/app/download
 //http://192.168.31.213:9090/log
 //http://192.168.31.213:9090/app/user/register?account=test?pwd=123
 //nohup ./PrivateChatService &
 func main() {
+	//pkg, err := apk.OpenFile(`E:\code\golang\src\gitee.com\DengAnbang\PrivateChatService\res\view\内部测试_V1.1.30_2021-04-23.apk`)
+	////icon, _ := pkg.Icon(nil)
+	//loge.W(pkg.Manifest().VersionName)
+	//pkg.Close()
+	//pkg.Icon()
+	//icon, _ := apk.Icon(nil) // returns the icon of APK as image.Image
+	//pkgName := pkg.PackageName() // returns the pakcage name
+	//mainActivity, _ = pkg.MainAcitivty()
 	err := sysUtils.Install("服务", "服务", "此服务程序为后端服务功能",
 		func() {
 			loge.W("准备开启服务..", config.ConfigBean.ApiPort)

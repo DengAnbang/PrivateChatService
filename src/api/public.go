@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"gitee.com/DengAnbang/PrivateChatService/src/bean"
 	"gitee.com/DengAnbang/PrivateChatService/src/code"
+	"gitee.com/DengAnbang/goutils/fileUtil"
 	"gitee.com/DengAnbang/goutils/httpUtils"
 	"gitee.com/DengAnbang/goutils/timeUtils"
 	"gitee.com/DengAnbang/goutils/utils"
+	"github.com/shogo82148/androidbinary/apk"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -86,7 +89,103 @@ func PublicFileUploadHttp(w http.ResponseWriter, r *http.Request) error {
 	}
 	return nil
 }
+func PublicAppUpdateHttp(w http.ResponseWriter, r *http.Request) error {
+	if r.Method == "POST" {
+		r.Body = http.MaxBytesReader(w, r.Body, FileMaxByte)
+		err := r.ParseMultipartForm(FileMaxByte)
+		if err != nil {
+			return err
+		}
+		file, h, err := r.FormFile("file")
+		if err != nil {
+			return err
+		}
+		bytes, err := ioutil.ReadAll(file)
+		if err != nil {
+			return err
+		}
 
+		temporary := filepath.Join(code.FileAppPath, "temporary/")
+		os.RemoveAll(temporary)
+		//FileRoot := code.FileRootPath + "/" + fileType + "/" + data + "/" + fileId + "/"
+		_ = os.MkdirAll(temporary, 0x777)
+		FilePath := filepath.Join(temporary, h.Filename)
+		err = ioutil.WriteFile(FilePath, bytes, 0x777)
+		if err != nil {
+			return err
+		}
+		pkg, err := apk.OpenFile(FilePath)
+		if err != nil {
+			return bean.NewErrorMessage("安装包解析失败!").SetDeBugMessage(err.Error())
+		}
+		defer pkg.Close()
+		s, err := pkg.Manifest().Package.String()
+		if err != nil {
+			return bean.NewErrorMessage("安装包解析失败!").SetDeBugMessage(err.Error())
+		}
+		if !strings.Contains(s, "com.hezeyi.privatechat") {
+			return bean.NewErrorMessage("安装包不正确!").SetDeBugMessage(s)
+		}
+		_ = os.MkdirAll(code.FileAppPath, 0x777)
+		//_, err = fileUtil.CopyFile(FilePath, FileRoot+"/app.apk")
+		err = ioutil.WriteFile(code.FileAppPathName, bytes, 0x777)
+		if err != nil {
+			return err
+		}
+		versionBean := bean.VersionBean{
+			VersionCode: pkg.Manifest().VersionCode.MustInt32(),
+			VersionName: pkg.Manifest().VersionName.MustString(),
+			VersionMsg:  "",
+			Packages:    pkg.Manifest().Package.MustString(),
+		}
+		return bean.NewSucceedMessage(versionBean)
+	}
+	if r.Method == "GET" {
+		var html = fmt.Sprintf(`<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Upload</title>
+</head>
+<body>
+<form method="POST" action='%v' enctype="multipart/form-data">
+    选择更新的apk文件: <input name="file" type="file" />
+    <input type="submit" value="上传" />
+</form>
+</body>
+</html>`, PublicAppUpdate)
+		_, _ = fmt.Fprint(w, html)
+		return nil
+	}
+	return nil
+}
+func PublicAppDownloadHttp(w http.ResponseWriter, r *http.Request) error {
+
+	if fileUtil.PathExists(code.FileAppPathName) {
+		f, _ := os.Stat(code.FileAppPathName)
+		if !f.IsDir() {
+			w.Header().Set("Content-Disposition", "attachment; filename="+path.Base(code.FileAppPathName))
+			http.ServeFile(w, r, code.FileAppPathName)
+			return nil
+		}
+	}
+	http.NotFound(w, r)
+	return nil
+}
+
+//func CopyFile(dstName, srcName string) (written int64, err error) {
+//	src, err := os.Open(srcName)
+//	if err != nil {
+//		return
+//	}
+//	defer src.Close()
+//	dst, err := os.OpenFile(dstName, os.O_WRONLY|os.O_CREATE, 0644)
+//	if err != nil {
+//		return
+//	}
+//	defer dst.Close()
+//	return io.Copy(dst, src)
+//}
 /**
 * showdoc
 * @catalog 接口文档/公共接口
@@ -170,57 +269,21 @@ func PublicFileUploadChatHttp(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-/**
-* showdoc
-* @catalog 接口文档/公共接口
-* @title app更新接口
-* @description app更新接口
-* @method POST
-* @url /public/app/updates/upload
-* @param fileType 选填 string 文件的类型，用于后期文件管理，比如user
-* @param fileId 必选 string 文件的Id
-* @return {"code":0,"type":0,"message":"","debug_message":"","data":"删除成功!"}
-* @remark fileType的说明：这个字段由客户端定，格式是xxx/xxx，比如user/portrait
-* @number 1
- */
-func PublicUpdatesUploadHttp(w http.ResponseWriter, r *http.Request) error {
-	fileType := httpUtils.GetValueFormRequest(r, "fileType")
-	fileId := httpUtils.GetValueFormRequest(r, "fileId")
-	FileRoot := code.FileRootPath + "/" + fileType + "/" + fileId + "/"
-	clean := filepath.Clean(FileRoot)
-	err := os.RemoveAll(clean)
-	if err != nil {
-		return err
-	}
-	return bean.NewSucceedMessage("删除成功!")
-
-}
-
-/**
-* showdoc
-* @catalog 接口文档/公共接口
-* @title 删除文件
-* @description 删除文件的接口
-* @method POST
-* @url /public/file/delete
-* @param fileType 选填 string 文件的类型，用于后期文件管理，比如user
-* @param fileId 必选 string 文件的Id
-* @return {"code":0,"type":0,"message":"","debug_message":"","data":"删除成功!"}
-* @remark fileType的说明：这个字段由客户端定，格式是xxx/xxx，比如user/portrait
-* @number 1
- */
 func PublicUpdatesCheckHttp(w http.ResponseWriter, r *http.Request) error {
-	//versionCode := httpUtils.GetValueFormRequest(r, "versionCode")
-	versionBean := bean.NewVersionBean(map[string]string{
-		"version_code":    "2",
-		"version_name":    "version_name",
-		"version_msg":     "version_msg",
-		"version_channel": "nb",
-		"file_name":       "file_name",
-		"file_path":       "file_path",
-		"file_id":         "file_id",
-	})
-
+	versionBean := bean.VersionBean{
+		VersionCode: 0,
+		VersionName: "",
+		VersionMsg:  "",
+		Packages:    "",
+	}
+	pkg, err := apk.OpenFile(code.FileAppPathName)
+	if err != nil {
+		return bean.NewSucceedMessage(versionBean).SetDeBugMessage(err.Error())
+	}
+	defer pkg.Close()
+	versionBean.VersionCode = pkg.Manifest().VersionCode.MustInt32()
+	versionBean.VersionName = pkg.Manifest().VersionName.MustString()
+	versionBean.Packages = pkg.Manifest().Package.MustString()
 	return bean.NewSucceedMessage(versionBean)
 
 }

@@ -13,4 +13,6 @@ var (
 	FileRootPath     = RootPath + "file/"
 	DatabaseRootPath = RootPath + "database/"
 	ConfigRootPath   = RootPath + "config/"
+	FileAppPath      = FileRootPath + "app/"
+	FileAppPathName  = FileAppPath + "/app.apk"
 )
