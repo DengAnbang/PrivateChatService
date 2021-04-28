@@ -159,6 +159,88 @@ func PublicAppUpdateHttp(w http.ResponseWriter, r *http.Request) error {
 	}
 	return nil
 }
+func PublicAppDownloadHtmlHttp(w http.ResponseWriter, r *http.Request) error {
+	var html = fmt.Sprintf(`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>下载S.O.M.</title>
+
+    <style type="text/css">
+        #weixin-tip {
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: rgba(0, 0, 0, 0.8);
+            filter: alpha(opacity=80);
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+        }
+
+        #weixin-tip p {
+            text-align: center;
+            margin-top: 10%;
+            padding: 0 5%;
+        }
+
+        #weixin_tip {
+            display: none;
+            position: absolute;
+            top: 0%;
+            width: 100%;
+
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        #weixin_tip p {
+            text-align: left;
+            color: #000;
+            background-color: #fff;
+            width: 100%;
+            margin-left: 10%;
+            padding: 2% 4%;
+            line-height: 2;
+            font-size: 36px;
+        }
+
+        #weixin_tip p span {
+            color: #34A0EA;
+        }
+    </style>
+
+</head>
+
+<body>
+   
+<div id="weixin_tip">
+    <p>我很努力,但是无奈这儿不让下载<br>别担心,点击<span>右上角</span><br>选择<span> "在浏览器中打开" </span>就能下啦~~</p>
+</div>
+</body>
+
+<script type="text/javascript">
+    function is_weixin() {
+        var ua = navigator.userAgent.toLowerCase();
+        if (ua.match(/MicroMessenger/i) == "micromessenger") {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // 微信内置浏览器打开，只是显示遮罩层，其他浏览器进行连接跳转
+    if (is_weixin()) {
+        document.getElementById("weixin_tip").style.display = "block";
+    } else {
+        document.getElementById("weixin_tip").style.display = "none";
+        window.location.href = "https://dab-1252331275.cos.ap-chengdu.myqcloud.com/S.O.M.apk";
+    }
+</script>
+</html>`)
+	_, _ = fmt.Fprint(w, html)
+	return nil
+}
 func PublicAppDownloadHttp(w http.ResponseWriter, r *http.Request) error {
 
 	if fileUtil.PathExists(code.FileAppPathName) {

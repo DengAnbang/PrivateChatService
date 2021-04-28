@@ -21,11 +21,12 @@ var (
 	PublicDatabaseRestore = "/public/database/restore"
 	PublicFileUpload      = "/public/file/upload"
 
-	PublicFileDelete     = "/public/file/delete"
-	PublicFileUploadChat = "/public/file/upload/chat"
-	PublicUpdatesCheck   = "/public/app/updates/check"
-	PublicAppUpdate      = "/public/app/updates/upload"
-	PublicAppDownload    = "/public/app/updates/download"
+	PublicFileDelete      = "/public/file/delete"
+	PublicFileUploadChat  = "/public/file/upload/chat"
+	PublicUpdatesCheck    = "/public/app/updates/check"
+	PublicAppUpdate       = "/public/app/updates/upload"
+	PublicAppDownload     = "/public/app/updates/download"
+	PublicAppDownloadHtml = "/public/app/updates/download/html"
 	//用户相关
 	UserRegister               = "/app/user/register"
 	UserLogin                  = "/app/user/login"
@@ -69,6 +70,7 @@ func Run(port string, mux *http.ServeMux) {
 	//公共部分
 	Apis[PublicAppUpdate] = PublicAppUpdateHttp
 	Apis[PublicAppDownload] = PublicAppDownloadHttp
+	Apis[PublicAppDownloadHtml] = PublicAppDownloadHtmlHttp
 	Apis[PublicFileUpload] = PublicFileUploadHttp
 	Apis[PublicFileDelete] = PublicFileDeleteHttp
 	Apis[PublicFileUploadChat] = PublicFileUploadChatHttp

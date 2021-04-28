@@ -42,7 +42,7 @@ func UserRegisterHttp(_ http.ResponseWriter, r *http.Request) error {
 		UserName:     user_name,
 		Account:      account,
 		Pwd:          pwd,
-		VipTime:      timeUtils.GetCurrentTimeFormat(timeUtils.DATE_TIME_FMT),
+		VipTime:      timeUtils.GetTimeFormat(timeUtils.GetTimestamp()+(1*24*60*60), timeUtils.DATE_TIME_FMT),
 		HeadPortrait: headPortrait,
 	}
 	user, err := dbops.UserRegister(userBean)
