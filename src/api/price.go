@@ -11,7 +11,8 @@ func PriceAddHttp(_ http.ResponseWriter, r *http.Request) error {
 	money := httpUtils.GetValueFormRequest(r, "money")
 	day := httpUtils.GetValueFormRequest(r, "day")
 	giving_day := httpUtils.GetValueFormRequest(r, "giving_day")
-	err := dbops.PriceAdd(money, day, giving_day)
+	pay_image := httpUtils.GetValueFormRequest(r, "pay_image")
+	err := dbops.PriceAdd(money, day, giving_day, pay_image)
 	if err != nil {
 		return err
 	}
@@ -29,8 +30,9 @@ func PriceUpdateHttp(_ http.ResponseWriter, r *http.Request) error {
 	money := httpUtils.GetValueFormRequest(r, "money")
 	day := httpUtils.GetValueFormRequest(r, "day")
 	giving_day := httpUtils.GetValueFormRequest(r, "giving_day")
+	pay_image := httpUtils.GetValueFormRequest(r, "pay_image")
 	id := httpUtils.GetValueFormRequest(r, "id")
-	err := dbops.PriceUpdate(money, day, giving_day, id)
+	err := dbops.PriceUpdate(money, day, giving_day, id, pay_image)
 	if err != nil {
 		return err
 	}

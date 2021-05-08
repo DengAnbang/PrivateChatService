@@ -102,6 +102,7 @@ func CreatePriceTable(db *sql.DB) error {
 	    money VARCHAR(64) NOT NULL  COMMENT '充值的金额',
 	    day VARCHAR(64) NOT NULL  COMMENT '充值天数',
 	    giving_day VARCHAR(64) NOT NULL  COMMENT '赠送天数',
+	    pay_image VARCHAR(128) NULL DEFAULT '' COMMENT '支付图片',
 	    created TIMESTAMP NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
 	    PRIMARY KEY (id)
 	)AUTO_INCREMENT = 0`)

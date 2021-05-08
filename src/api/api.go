@@ -14,8 +14,7 @@ import (
 )
 
 var (
-	UploadWorkTime = "/UploadWorkTime"
-	GetWorkTime    = "/GetWorkTime"
+
 	//公共部分
 	PublicDatabaseBackups = "/public/database/backups"
 	PublicDatabaseRestore = "/public/database/restore"

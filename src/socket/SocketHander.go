@@ -47,8 +47,7 @@ func Dispense(message *bean.SocketData, conn push.ResponseAble) {
 		}
 		//push.PushSocket(message)
 	case socketConst.TYPE_MSG_UPDATE:
-		push.PushSocket(message)
-
+		push.PushSocketByTargetId(message, message.SenderId)
 	case socketConst.TypeHeartbeat:
 		message.Data = "PONG"
 		//push.PushSocket(message)

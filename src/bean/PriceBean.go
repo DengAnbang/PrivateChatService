@@ -5,6 +5,7 @@ type PriceBean struct {
 	Money     string `json:"money"`
 	Day       string `json:"day"`
 	GivingDay string `json:"giving_day"`
+	PayImage  string `json:"pay_image"`
 }
 
 func NewPriceBean(data map[string]string) *PriceBean {
@@ -13,5 +14,6 @@ func NewPriceBean(data map[string]string) *PriceBean {
 		Money:     data["money"],
 		Day:       data["day"],
 		GivingDay: data["giving_day"],
+		PayImage:  data["pay_image"],
 	}
 }
