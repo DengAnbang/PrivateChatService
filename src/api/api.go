@@ -118,8 +118,9 @@ func Run(port string, mux *http.ServeMux) {
 		mux.HandleFunc(k, AppHandleFunc(v))
 	}
 	loge.SetHttp(mux)
+	err := update.UpgradeService(":"+port, mux)
 	//_ = update.UpgradeServiceTLS(":"+port, mux,`E:\code\golang\src\gitee.com\DengAnbang\PrivateChatService\res\hezeyisoftware.com.pem`,`E:\code\golang\src\gitee.com\DengAnbang\PrivateChatService\res\hezeyisoftware.com.key`)
-	err := update.UpgradeServiceTLS(":443", mux, code.FileHTTPSPathCrt, code.FileHTTPSPathKey)
+	//err := update.UpgradeServiceTLS(":443", mux, code.FileHTTPSPathCrt, code.FileHTTPSPathKey)
 	loge.W(err)
 }
 

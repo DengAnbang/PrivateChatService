@@ -22,13 +22,14 @@ type Bean struct {
 	DebugLog         bool   `json:"debug_log"`
 }
 
+// 3fce54a33a68.c.methodot.com:30709
 var ConfigBean = Bean{
 	ApiPort:          "9090",
 	SocketPort:       "9091",
 	DatabaseUserName: "root",
 	DatabasePassWord: "root123456",
-	DatabaseAddress:  "47.108.172.20",
-	DatabasePort:     "13306",
+	DatabaseAddress:  "3fce54a33a68.c.methodot.com",
+	DatabasePort:     "30709",
 	DatabaseName:     "PrivateChat",
 	DebugLog:         false}
 
